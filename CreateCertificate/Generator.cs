@@ -17,33 +17,41 @@ using X509KeyStorageFlags = System.Security.Cryptography.X509Certificates.X509Ke
 
 namespace CreateCertificate
 {
-    public static class Generator
+    public class Generator
     {
-        public static X509Certificate2 IssueCertificate(string subjectName, X509Certificate2 issuerCertificate, string[] subjectAlternativeNames, KeyPurposeID[] usages)
+        public string SubjectName { get; set; }
+
+        public X509Certificate2 Issuer { get; set; }
+
+        public string[] SubjectAlternativeNames { get; set; }
+
+        public KeyPurposeID[] Usages { get; set; }
+
+        public X509Certificate2 IssueCertificate()
         {
             // It's self-signed, so these are the same.
-            var issuerName = issuerCertificate.Subject;
+            var issuerName = Issuer.Subject;
 
             var random = GetSecureRandom();
             var subjectKeyPair = GenerateKeyPair(random, 2048);
 
-            var issuerKeyPair = DotNetUtilities.GetKeyPair(issuerCertificate.PrivateKey);
+            var issuerKeyPair = DotNetUtilities.GetKeyPair(Issuer.PrivateKey);
 
             var serialNumber = GenerateSerialNumber(random);
-            var issuerSerialNumber = new BigInteger(issuerCertificate.GetSerialNumber());
+            var issuerSerialNumber = new BigInteger(Issuer.GetSerialNumber());
 
             const bool isCertificateAuthority = false;
-            var certificate = GenerateCertificate(random, subjectName, subjectKeyPair, serialNumber,
-                                                  subjectAlternativeNames, issuerName, issuerKeyPair,
+            var certificate = GenerateCertificate(random, SubjectName, subjectKeyPair, serialNumber,
+                                                  SubjectAlternativeNames, issuerName, issuerKeyPair,
                                                   issuerSerialNumber, isCertificateAuthority,
-                                                  usages);
+                                                  Usages);
             return ConvertCertificate(certificate, subjectKeyPair, random);
         }
 
-        public static X509Certificate2 CreateCertificateAuthorityCertificate(string subjectName, string[] subjectAlternativeNames, KeyPurposeID[] usages)
+        public X509Certificate2 CreateCertificateAuthorityCertificate()
         {
             // It's self-signed, so these are the same.
-            var issuerName = subjectName;
+            var issuerName = SubjectName;
 
             var random = GetSecureRandom();
             var subjectKeyPair = GenerateKeyPair(random, 2048);
@@ -55,17 +63,17 @@ namespace CreateCertificate
             var issuerSerialNumber = serialNumber; // Self-signed, so it's the same serial number.
 
             const bool isCertificateAuthority = true;
-            var certificate = GenerateCertificate(random, subjectName, subjectKeyPair, serialNumber,
-                                                  subjectAlternativeNames, issuerName, issuerKeyPair,
+            var certificate = GenerateCertificate(random, SubjectName, subjectKeyPair, serialNumber,
+                                                  SubjectAlternativeNames, issuerName, issuerKeyPair,
                                                   issuerSerialNumber, isCertificateAuthority,
-                                                  usages);
+                                                  Usages);
             return ConvertCertificate(certificate, subjectKeyPair, random);
         }
 
-        public static X509Certificate2 CreateSelfSignedCertificate(string subjectName, string[] subjectAlternativeNames, KeyPurposeID[] usages)
+        public X509Certificate2 CreateSelfSignedCertificate()
         {
             // It's self-signed, so these are the same.
-            var issuerName = subjectName;
+            var issuerName = SubjectName;
 
             var random = GetSecureRandom();
             var subjectKeyPair = GenerateKeyPair(random, 2048);
@@ -77,10 +85,10 @@ namespace CreateCertificate
             var issuerSerialNumber = serialNumber; // Self-signed, so it's the same serial number.
 
             const bool isCertificateAuthority = false;
-            var certificate = GenerateCertificate(random, subjectName, subjectKeyPair, serialNumber,
-                                                  subjectAlternativeNames, issuerName, issuerKeyPair,
+            var certificate = GenerateCertificate(random, SubjectName, subjectKeyPair, serialNumber,
+                                                  SubjectAlternativeNames, issuerName, issuerKeyPair,
                                                   issuerSerialNumber, isCertificateAuthority,
-                                                  usages);
+                                                  Usages);
             return ConvertCertificate(certificate, subjectKeyPair, random);
         }
 

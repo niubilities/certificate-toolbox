@@ -32,11 +32,17 @@ namespace CreateCertificate
                     {
                         if (args.Length != 3)
                             return ShowUsage();
-
-                        var subjectName = args[1];
+                        
                         var outputFileName = args[2];
 
-                        var certificate = Generator.CreateSelfSignedCertificate(subjectName, new[] {"server", "server.mydomain.com"}, new[] {KeyPurposeID.IdKPServerAuth});
+                        var generator = new Generator
+                        {
+                            SubjectName = args[1],
+                            SubjectAlternativeNames = new[] {"server", "server.mydomain.com"},
+                            Usages = new[] {KeyPurposeID.IdKPServerAuth}
+                        };
+
+                        var certificate = generator.CreateSelfSignedCertificate();
                         WriteCertificate(certificate, outputFileName);
                         return 0;
                     }
@@ -46,10 +52,14 @@ namespace CreateCertificate
                         if (args.Length != 3)
                             return ShowUsage();
 
-                        var subjectName = args[1];
                         var outputFileName = args[2];
 
-                        var certificate = Generator.CreateCertificateAuthorityCertificate(subjectName, null, null);
+                        var generator = new Generator
+                        {
+                            SubjectName = args[1]
+                        };
+
+                        var certificate = generator.CreateCertificateAuthorityCertificate();
                         WriteCertificate(certificate, outputFileName);
                         return 0;
                     }
@@ -60,13 +70,18 @@ namespace CreateCertificate
                             return ShowUsage();
 
                         var issuerFileName = args[1];
-                        var subjectName = args[2];
                         var outputFileName = args[3];
+                        
+                        var generator = new Generator
+                        {
+                            SubjectName = args[2],
+                            SubjectAlternativeNames = new[] { "server", "server.mydomain.com" },
+                            Usages = new[] { KeyPurposeID.IdKPServerAuth },
+                            Issuer = LoadCertificate(issuerFileName, "password")
+                        };
 
-                        var issuerCertificate = LoadCertificate(issuerFileName, "password");
-                        var certificate = Generator.IssueCertificate(subjectName, issuerCertificate, new[] {"server", "server.mydomain.com"}, new[] {KeyPurposeID.IdKPServerAuth});
+                        var certificate = generator.IssueCertificate();
                         WriteCertificate(certificate, outputFileName);
-
                         return 0;
                     }
 
