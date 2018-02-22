@@ -47,6 +47,11 @@ namespace CreateCertificate
                 // It's self-signed, so these are the same.
                 issuerName = SubjectName;
             }
+            else
+            {
+                issuerName = Issuer.Subject;
+                issuerKeyPair = DotNetUtilities.GetKeyPair(Issuer.PrivateKey);
+            }
 
             var certificate = GenerateCertificate(random, SubjectName, subjectKeyPair, serialNumber,
                                                   SubjectAlternativeNames, issuerName, issuerKeyPair,
