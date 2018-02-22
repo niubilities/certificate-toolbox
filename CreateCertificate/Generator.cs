@@ -27,6 +27,8 @@ namespace CreateCertificate
 
         public KeyPurposeID[] Usages { get; set; }
 
+        public bool IsCertificateAuthority { get; set; }
+
         public X509Certificate2 IssueCertificate()
         {
             // It's self-signed, so these are the same.
@@ -47,29 +49,7 @@ namespace CreateCertificate
                                                   Usages);
             return ConvertCertificate(certificate, subjectKeyPair, random);
         }
-
-        public X509Certificate2 CreateCertificateAuthorityCertificate()
-        {
-            // It's self-signed, so these are the same.
-            var issuerName = SubjectName;
-
-            var random = GetSecureRandom();
-            var subjectKeyPair = GenerateKeyPair(random, 2048);
-
-            // It's self-signed, so these are the same.
-            var issuerKeyPair = subjectKeyPair;
-
-            var serialNumber = GenerateSerialNumber(random);
-            var issuerSerialNumber = serialNumber; // Self-signed, so it's the same serial number.
-
-            const bool isCertificateAuthority = true;
-            var certificate = GenerateCertificate(random, SubjectName, subjectKeyPair, serialNumber,
-                                                  SubjectAlternativeNames, issuerName, issuerKeyPair,
-                                                  issuerSerialNumber, isCertificateAuthority,
-                                                  Usages);
-            return ConvertCertificate(certificate, subjectKeyPair, random);
-        }
-
+        
         public X509Certificate2 CreateSelfSignedCertificate()
         {
             // It's self-signed, so these are the same.
@@ -83,11 +63,10 @@ namespace CreateCertificate
 
             var serialNumber = GenerateSerialNumber(random);
             var issuerSerialNumber = serialNumber; // Self-signed, so it's the same serial number.
-
-            const bool isCertificateAuthority = false;
+            
             var certificate = GenerateCertificate(random, SubjectName, subjectKeyPair, serialNumber,
                                                   SubjectAlternativeNames, issuerName, issuerKeyPair,
-                                                  issuerSerialNumber, isCertificateAuthority,
+                                                  issuerSerialNumber, IsCertificateAuthority,
                                                   Usages);
             return ConvertCertificate(certificate, subjectKeyPair, random);
         }

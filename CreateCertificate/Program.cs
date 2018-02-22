@@ -56,10 +56,11 @@ namespace CreateCertificate
 
                         var generator = new Generator
                         {
-                            SubjectName = args[1]
+                            SubjectName = args[1],
+                            IsCertificateAuthority = true
                         };
 
-                        var certificate = generator.CreateCertificateAuthorityCertificate();
+                        var certificate = generator.CreateSelfSignedCertificate();
                         WriteCertificate(certificate, outputFileName);
                         return 0;
                     }
