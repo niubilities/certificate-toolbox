@@ -43,10 +43,10 @@ namespace CreateCertificate
             var subjectKeyPair = GenerateKeyPair(random, 2048);
 
             var serialNumber = GenerateSerialNumber(random);
-            var issuerSerialNumber = serialNumber; // Self-signed, so it's the same serial number.
-
+            
             AsymmetricCipherKeyPair issuerKeyPair = null;
             string issuerName = null;
+            BigInteger issuerSerialNumber = null;
 
             if (Issuer == null)
             {
@@ -54,11 +54,14 @@ namespace CreateCertificate
                 issuerKeyPair = subjectKeyPair;
                 // It's self-signed, so these are the same.
                 issuerName = SubjectName;
+                // Self-signed, so it's the same serial number.
+                issuerSerialNumber = serialNumber; 
             }
             else
             {
                 issuerName = Issuer.Subject;
                 issuerKeyPair = DotNetUtilities.GetKeyPair(Issuer.PrivateKey);
+                issuerSerialNumber = new BigInteger(Issuer.GetSerialNumber());
             }
 
             var certificateGenerator = new X509V3CertificateGenerator();
