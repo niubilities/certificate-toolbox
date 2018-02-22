@@ -1,20 +1,33 @@
 ﻿using System;
 using System.Security.Cryptography.X509Certificates;
 using System.Windows.Forms;
-using Org.BouncyCastle.Crypto.Prng;
 using Org.BouncyCastle.Math;
-using Org.BouncyCastle.Security;
-using Org.BouncyCastle.Utilities;
 
 namespace CertificateToolbox
 {
     public partial class CertificateDetails : UserControl
     {
-        public Control Issuer { get; set; }
+        public CertificateDetails Issuer { get; set; }
 
         public CertificateDetails()
         {
             InitializeComponent();
+        }
+
+        public CertificateDetails(int serialNumber, CertificateDetails issuer)
+        {
+            InitializeComponent();
+
+            Issuer = issuer;
+
+            serial.Text = serialNumber.ToString();
+            subject.Text = "CN=Mihai" + serialNumber;
+
+            store_location.DataSource = Enum.GetValues(typeof(StoreLocation));
+            store_name.DataSource = Enum.GetValues(typeof(StoreName));
+
+            store_location.SelectedItem = StoreLocation.LocalMachine;
+            store_name.SelectedItem = StoreName.Root;
 
             not_before.Value = DateTime.UtcNow.AddDays(-1);
             not_after.Value = DateTime.UtcNow.AddYears(100);
@@ -24,20 +37,23 @@ namespace CertificateToolbox
         {
             var generator = new Generator
             {
-                SerialNumber = BigIntegers.CreateRandomInRange(BigInteger.One, BigInteger.ValueOf(Int64.MaxValue), new SecureRandom(new CryptoApiRandomGenerator())),
+                SerialNumber = new BigInteger(serial.Text),
                 SubjectName = subject.Text,
                 NotBefore = not_before.Value,
                 NotAfter = not_after.Value,
                 IsCertificateAuthority = true,
-                Issuer = ((CertificateDetails)Issuer)?.Generate()
+                Issuer = Issuer?.Generate()
             };
 
             var certificate = generator.Generate();
 
-            var store = new X509Store(StoreName.Root, StoreLocation.LocalMachine);
-            store.Open(OpenFlags.ReadWrite);
-            store.Add(certificate);
-            store.Close();
+            if (install_store.Checked)
+            {
+                var store = new X509Store((StoreName)store_name.SelectedItem, (StoreLocation)store_location.SelectedItem);
+                store.Open(OpenFlags.ReadWrite);
+                store.Add(certificate);
+                store.Close();
+            }
 
             return certificate;
         }
