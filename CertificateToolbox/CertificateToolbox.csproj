@@ -51,6 +51,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CertificateDetails.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="CertificateDetails.Designer.cs">
+      <DependentUpon>CertificateDetails.cs</DependentUpon>
+    </Compile>
     <Compile Include="Generator.cs" />
     <Compile Include="Shell.cs">
       <SubType>Form</SubType>
@@ -60,6 +66,9 @@
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <EmbeddedResource Include="CertificateDetails.resx">
+      <DependentUpon>CertificateDetails.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Shell.resx">
       <DependentUpon>Shell.cs</DependentUpon>
     </EmbeddedResource>
