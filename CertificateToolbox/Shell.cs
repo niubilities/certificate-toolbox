@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Security.Cryptography.X509Certificates;
 using System.Windows.Forms;
+using Org.BouncyCastle.Math;
 
 namespace CertificateToolbox
 {
@@ -20,6 +21,7 @@ namespace CertificateToolbox
 
             var generator = new Generator
             {
+                SerialNumber = new BigInteger("1"),
                 SubjectName = subject.Text,
                 NotBefore = not_before.Value,
                 NotAfter = not_after.Value,
