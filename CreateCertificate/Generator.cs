@@ -28,6 +28,10 @@ namespace CreateCertificate
         public KeyPurposeID[] Usages { get; set; }
 
         public bool IsCertificateAuthority { get; set; }
+
+        public string OcspEndpoint { get; set; }
+
+        public string CrlEndpoint { get; set; }
         
         public X509Certificate2 Generate()
         {
@@ -53,39 +57,9 @@ namespace CreateCertificate
                 issuerKeyPair = DotNetUtilities.GetKeyPair(Issuer.PrivateKey);
             }
 
-            var certificate = GenerateCertificate(random, SubjectName, subjectKeyPair, serialNumber,
-                                                  SubjectAlternativeNames, issuerName, issuerKeyPair,
-                                                  issuerSerialNumber, IsCertificateAuthority,
-                                                  Usages);
-            return ConvertCertificate(certificate, subjectKeyPair, random);
-        }
-
-        private static SecureRandom GetSecureRandom()
-        {
-            // Since we're on Windows, we'll use the CryptoAPI one (on the assumption
-            // that it might have access to better sources of entropy than the built-in
-            // Bouncy Castle ones):
-            var randomGenerator = new CryptoApiRandomGenerator();
-            var random = new SecureRandom(randomGenerator);
-            return random;
-        }
-
-        private static X509Certificate GenerateCertificate(SecureRandom random,
-                                                           string subjectName,
-                                                           AsymmetricCipherKeyPair subjectKeyPair,
-                                                           BigInteger subjectSerialNumber,
-                                                           string[] subjectAlternativeNames,
-                                                           string issuerName,
-                                                           AsymmetricCipherKeyPair issuerKeyPair,
-                                                           BigInteger issuerSerialNumber,
-                                                           bool isCertificateAuthority,
-                                                           KeyPurposeID[] usages,
-                                                           string crlEndpoint = null,
-                                                           string ocspEndpoint = null)
-        {
             var certificateGenerator = new X509V3CertificateGenerator();
 
-            certificateGenerator.SetSerialNumber(subjectSerialNumber);
+            certificateGenerator.SetSerialNumber(serialNumber);
 
             // Set the signature algorithm. This is used to generate the thumbprint which is then signed
             // with the issuer's private key. We'll use SHA-256, which is (currently) considered fairly strong.
@@ -96,7 +70,7 @@ namespace CreateCertificate
             certificateGenerator.SetIssuerDN(issuerDN);
 
             // Note: The subject can be omitted if you specify a subject alternative name (SAN).
-            var subjectDN = new X509Name(subjectName);
+            var subjectDN = new X509Name(SubjectName);
             certificateGenerator.SetSubjectDN(subjectDN);
 
             // Our certificate needs valid from/to values.
@@ -111,25 +85,36 @@ namespace CreateCertificate
 
             AddAuthorityKeyIdentifier(certificateGenerator, issuerDN, issuerKeyPair, issuerSerialNumber);
             AddSubjectKeyIdentifier(certificateGenerator, subjectKeyPair);
-            AddBasicConstraints(certificateGenerator, isCertificateAuthority);
+            AddBasicConstraints(certificateGenerator, IsCertificateAuthority);
 
-            if (usages != null && usages.Any())
-                AddExtendedKeyUsage(certificateGenerator, usages);
+            if (Usages != null && Usages.Any())
+                AddExtendedKeyUsage(certificateGenerator, Usages);
 
-            if (subjectAlternativeNames != null && subjectAlternativeNames.Any())
-                AddSubjectAlternativeNames(certificateGenerator, subjectAlternativeNames);
+            if (SubjectAlternativeNames != null && SubjectAlternativeNames.Any())
+                AddSubjectAlternativeNames(certificateGenerator, SubjectAlternativeNames);
 
-            if (!string.IsNullOrEmpty(ocspEndpoint))
-                AddOcspPoints(certificateGenerator, ocspEndpoint);
+            if (!string.IsNullOrEmpty(OcspEndpoint))
+                AddOcspPoints(certificateGenerator, OcspEndpoint);
 
-            if (!string.IsNullOrEmpty(crlEndpoint))
-                AddCrlDistributionPoints(certificateGenerator, crlEndpoint);
+            if (!string.IsNullOrEmpty(CrlEndpoint))
+                AddCrlDistributionPoints(certificateGenerator, CrlEndpoint);
 
             // The certificate is signed with the issuer's private key.
             var certificate = certificateGenerator.Generate(issuerKeyPair.Private, random);
-            return certificate;
+
+            return ConvertCertificate(certificate, subjectKeyPair, random);
         }
 
+        private static SecureRandom GetSecureRandom()
+        {
+            // Since we're on Windows, we'll use the CryptoAPI one (on the assumption
+            // that it might have access to better sources of entropy than the built-in
+            // Bouncy Castle ones):
+            var randomGenerator = new CryptoApiRandomGenerator();
+            var random = new SecureRandom(randomGenerator);
+            return random;
+        }
+        
         /// <summary>
         /// The certificate needs a serial number. This is used for revocation,
         /// and usually should be an incrementing index (which makes it easier to revoke a range of certificates).
