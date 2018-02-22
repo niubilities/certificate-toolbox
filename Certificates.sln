@@ -1,6 +1,8 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2012
+# Visual Studio 14
+VisualStudioVersion = 14.0.25420.1
+MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CreateCertificate", "CreateCertificate\CreateCertificate.csproj", "{519EC987-2F86-4DAF-9A03-15E19C46AE43}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{FC3602AA-9BC6-4806-930F-5D5221D9F12C}"
@@ -9,6 +11,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{FC3602
 		.nuget\NuGet.exe = .nuget\NuGet.exe
 		.nuget\NuGet.targets = .nuget\NuGet.targets
 	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CertificateToolbox", "CertificateToolbox\CertificateToolbox.csproj", "{4A5F0EFD-F100-44DE-BE3C-63531F1B8C37}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -20,6 +24,10 @@ Global
 		{519EC987-2F86-4DAF-9A03-15E19C46AE43}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{519EC987-2F86-4DAF-9A03-15E19C46AE43}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{519EC987-2F86-4DAF-9A03-15E19C46AE43}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4A5F0EFD-F100-44DE-BE3C-63531F1B8C37}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4A5F0EFD-F100-44DE-BE3C-63531F1B8C37}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4A5F0EFD-F100-44DE-BE3C-63531F1B8C37}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4A5F0EFD-F100-44DE-BE3C-63531F1B8C37}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
