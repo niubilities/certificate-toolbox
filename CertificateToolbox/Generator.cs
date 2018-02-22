@@ -21,6 +21,10 @@ namespace CreateCertificate
     {
         public string SubjectName { get; set; }
 
+        public DateTime NotBefore { get; set; }
+
+        public DateTime NotAfter { get; set; }
+
         public X509Certificate2 Issuer { get; set; }
 
         public string[] SubjectAlternativeNames { get; set; }
@@ -72,13 +76,9 @@ namespace CreateCertificate
             // Note: The subject can be omitted if you specify a subject alternative name (SAN).
             var subjectDN = new X509Name(SubjectName);
             certificateGenerator.SetSubjectDN(subjectDN);
-
-            // Our certificate needs valid from/to values.
-            var notBefore = DateTime.UtcNow.Date;
-            var notAfter = notBefore.AddYears(2);
-
-            certificateGenerator.SetNotBefore(notBefore);
-            certificateGenerator.SetNotAfter(notAfter);
+            
+            certificateGenerator.SetNotBefore(NotBefore);
+            certificateGenerator.SetNotAfter(NotAfter);
 
             // The subject's public key goes in the certificate.
             certificateGenerator.SetPublicKey(subjectKeyPair.Public);
