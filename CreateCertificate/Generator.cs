@@ -28,42 +28,26 @@ namespace CreateCertificate
         public KeyPurposeID[] Usages { get; set; }
 
         public bool IsCertificateAuthority { get; set; }
-
-        public X509Certificate2 IssueCertificate()
-        {
-            // It's self-signed, so these are the same.
-            var issuerName = Issuer.Subject;
-
-            var random = GetSecureRandom();
-            var subjectKeyPair = GenerateKeyPair(random, 2048);
-
-            var issuerKeyPair = DotNetUtilities.GetKeyPair(Issuer.PrivateKey);
-
-            var serialNumber = GenerateSerialNumber(random);
-            var issuerSerialNumber = new BigInteger(Issuer.GetSerialNumber());
-
-            const bool isCertificateAuthority = false;
-            var certificate = GenerateCertificate(random, SubjectName, subjectKeyPair, serialNumber,
-                                                  SubjectAlternativeNames, issuerName, issuerKeyPair,
-                                                  issuerSerialNumber, isCertificateAuthority,
-                                                  Usages);
-            return ConvertCertificate(certificate, subjectKeyPair, random);
-        }
         
-        public X509Certificate2 CreateSelfSignedCertificate()
+        public X509Certificate2 Generate()
         {
-            // It's self-signed, so these are the same.
-            var issuerName = SubjectName;
-
             var random = GetSecureRandom();
             var subjectKeyPair = GenerateKeyPair(random, 2048);
-
-            // It's self-signed, so these are the same.
-            var issuerKeyPair = subjectKeyPair;
 
             var serialNumber = GenerateSerialNumber(random);
             var issuerSerialNumber = serialNumber; // Self-signed, so it's the same serial number.
-            
+
+            AsymmetricCipherKeyPair issuerKeyPair = null;
+            string issuerName = null;
+
+            if (Issuer == null)
+            {
+                // It's self-signed, so these are the same.
+                issuerKeyPair = subjectKeyPair;
+                // It's self-signed, so these are the same.
+                issuerName = SubjectName;
+            }
+
             var certificate = GenerateCertificate(random, SubjectName, subjectKeyPair, serialNumber,
                                                   SubjectAlternativeNames, issuerName, issuerKeyPair,
                                                   issuerSerialNumber, IsCertificateAuthority,

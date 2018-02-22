@@ -42,7 +42,7 @@ namespace CreateCertificate
                             Usages = new[] {KeyPurposeID.IdKPServerAuth}
                         };
 
-                        var certificate = generator.CreateSelfSignedCertificate();
+                        var certificate = generator.Generate();
                         WriteCertificate(certificate, outputFileName);
                         return 0;
                     }
@@ -60,7 +60,7 @@ namespace CreateCertificate
                             IsCertificateAuthority = true
                         };
 
-                        var certificate = generator.CreateSelfSignedCertificate();
+                        var certificate = generator.Generate();
                         WriteCertificate(certificate, outputFileName);
                         return 0;
                     }
@@ -81,7 +81,7 @@ namespace CreateCertificate
                             Issuer = LoadCertificate(issuerFileName, "password")
                         };
 
-                        var certificate = generator.IssueCertificate();
+                        var certificate = generator.Generate();
                         WriteCertificate(certificate, outputFileName);
                         return 0;
                     }
