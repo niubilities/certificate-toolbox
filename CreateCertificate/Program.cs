@@ -177,7 +177,9 @@ namespace CreateCertificate
                                                            AsymmetricCipherKeyPair issuerKeyPair,
                                                            BigInteger issuerSerialNumber,
                                                            bool isCertificateAuthority,
-                                                           KeyPurposeID[] usages)
+                                                           KeyPurposeID[] usages,
+                                                           string crlEndpoint = null,
+                                                           string ocspEndpoint = null)
         {
             var certificateGenerator = new X509V3CertificateGenerator();
 
@@ -214,6 +216,12 @@ namespace CreateCertificate
 
             if (subjectAlternativeNames != null && subjectAlternativeNames.Any())
                 AddSubjectAlternativeNames(certificateGenerator, subjectAlternativeNames);
+
+            if (!string.IsNullOrEmpty(ocspEndpoint))
+                AddOcspPoints(certificateGenerator, ocspEndpoint);
+
+            if (!string.IsNullOrEmpty(crlEndpoint))
+                AddCrlDistributionPoints(certificateGenerator, crlEndpoint);
 
             // The certificate is signed with the issuer's private key.
             var certificate = certificateGenerator.Generate(issuerKeyPair.Private, random);
@@ -330,6 +338,31 @@ namespace CreateCertificate
                     SubjectPublicKeyInfoFactory.CreateSubjectPublicKeyInfo(subjectKeyPair.Public));
             certificateGenerator.AddExtension(
                 X509Extensions.SubjectKeyIdentifier.Id, false, subjectKeyIdentifierExtension);
+        }
+
+        public static void AddOcspPoints(X509V3CertificateGenerator certificateGenerator, string ocspEndpoint)
+        {
+            if (!string.IsNullOrEmpty(ocspEndpoint))
+            {
+                GeneralName generalName = new GeneralName(GeneralName.UniformResourceIdentifier, new DerIA5String(ocspEndpoint));
+                var authorityInformationAccess = new AuthorityInformationAccess(new AccessDescription(X509ObjectIdentifiers.OcspAccessMethod, generalName));
+                certificateGenerator.AddExtension(X509Extensions.AuthorityInfoAccess, false, authorityInformationAccess);
+            }
+        }
+
+        public static void AddCrlDistributionPoints(X509V3CertificateGenerator certificateGenerator, string crlEndpoint)
+        {
+            if (!string.IsNullOrEmpty(crlEndpoint))
+            {
+
+                var generalName = new GeneralName(GeneralName.UniformResourceIdentifier, new DerIA5String(crlEndpoint));
+                var gns = new GeneralNames(generalName);
+                var dpn = new DistributionPointName(gns);
+                var distp = new DistributionPoint(dpn, null, null);
+                var seq = new DerSequence(distp);
+
+                certificateGenerator.AddExtension(X509Extensions.CrlDistributionPoints, false, seq);
+            }
         }
 
         private static X509Certificate2 ConvertCertificate(X509Certificate certificate,
