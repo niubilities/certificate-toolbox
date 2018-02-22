@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Org.BouncyCastle.Asn1;
@@ -15,46 +14,46 @@ using Org.BouncyCastle.X509;
 using X509Certificate2 = System.Security.Cryptography.X509Certificates.X509Certificate2;
 using X509KeyStorageFlags = System.Security.Cryptography.X509Certificates.X509KeyStorageFlags;
 
-namespace CreateCertificate
+namespace CertificateToolbox
 {
     public class Generator
     {
         public string SubjectName { get; set; }
-
         public DateTime NotBefore { get; set; }
-
         public DateTime NotAfter { get; set; }
-
         public X509Certificate2 Issuer { get; set; }
-
         public string[] SubjectAlternativeNames { get; set; }
-
         public KeyPurposeID[] Usages { get; set; }
-
         public bool IsCertificateAuthority { get; set; }
-
         public string OcspEndpoint { get; set; }
-
         public string CrlEndpoint { get; set; }
+
+        private readonly SecureRandom random;
+        private readonly X509V3CertificateGenerator certificateGenerator;
+
+        private string issuerName;
+        private BigInteger issuerSerialNumber;
+        private AsymmetricCipherKeyPair issuerKeyPair;
+        private AsymmetricCipherKeyPair subjectKeyPair;
         
+        public Generator()
+        {
+            // Since we're on Windows, we'll use the CryptoAPI one (on the assumption
+            // that it might have access to better sources of entropy than the Bouncy Castle ones):
+            random = new SecureRandom(new CryptoApiRandomGenerator());
+
+            certificateGenerator = new X509V3CertificateGenerator();
+        }
+
         public X509Certificate2 Generate()
         {
-            var random = GetSecureRandom();
-            var subjectKeyPair = GenerateKeyPair(random, 2048);
-
-            var serialNumber = GenerateSerialNumber(random);
+            var serialNumber = GenerateSerialNumber();
+            subjectKeyPair = GenerateKeyPair(2048);
             
-            AsymmetricCipherKeyPair issuerKeyPair = null;
-            string issuerName = null;
-            BigInteger issuerSerialNumber = null;
-
             if (Issuer == null)
             {
-                // It's self-signed, so these are the same.
                 issuerKeyPair = subjectKeyPair;
-                // It's self-signed, so these are the same.
                 issuerName = SubjectName;
-                // Self-signed, so it's the same serial number.
                 issuerSerialNumber = serialNumber; 
             }
             else
@@ -63,90 +62,50 @@ namespace CreateCertificate
                 issuerKeyPair = DotNetUtilities.GetKeyPair(Issuer.PrivateKey);
                 issuerSerialNumber = new BigInteger(Issuer.GetSerialNumber());
             }
-
-            var certificateGenerator = new X509V3CertificateGenerator();
-
-            certificateGenerator.SetSerialNumber(serialNumber);
-
-            // Set the signature algorithm. This is used to generate the thumbprint which is then signed
-            // with the issuer's private key. We'll use SHA-256, which is (currently) considered fairly strong.
-            const string signatureAlgorithm = "SHA256WithRSA";
-            certificateGenerator.SetSignatureAlgorithm(signatureAlgorithm);
-
-            var issuerDN = new X509Name(issuerName);
-            certificateGenerator.SetIssuerDN(issuerDN);
-
-            // Note: The subject can be omitted if you specify a subject alternative name (SAN).
-            var subjectDN = new X509Name(SubjectName);
-            certificateGenerator.SetSubjectDN(subjectDN);
             
+            certificateGenerator.SetSerialNumber(serialNumber);
+            certificateGenerator.SetSignatureAlgorithm("SHA256WithRSA");
+            certificateGenerator.SetIssuerDN(new X509Name(issuerName));
+            certificateGenerator.SetSubjectDN(new X509Name(SubjectName));
             certificateGenerator.SetNotBefore(NotBefore);
             certificateGenerator.SetNotAfter(NotAfter);
-
-            // The subject's public key goes in the certificate.
             certificateGenerator.SetPublicKey(subjectKeyPair.Public);
+            AddAuthorityKeyIdentifier();
+            AddSubjectKeyIdentifier();
+            AddBasicConstraints();
+            AddExtendedKeyUsage();
+            AddSubjectAlternativeNames();
+            AddOcspPoints();
+            AddCrlDistributionPoints();
 
-            AddAuthorityKeyIdentifier(certificateGenerator, issuerDN, issuerKeyPair, issuerSerialNumber);
-            AddSubjectKeyIdentifier(certificateGenerator, subjectKeyPair);
-            AddBasicConstraints(certificateGenerator, IsCertificateAuthority);
+            var certificate = certificateGenerator.Generate(issuerKeyPair.Private);
 
-            if (Usages != null && Usages.Any())
-                AddExtendedKeyUsage(certificateGenerator, Usages);
-
-            if (SubjectAlternativeNames != null && SubjectAlternativeNames.Any())
-                AddSubjectAlternativeNames(certificateGenerator, SubjectAlternativeNames);
-
-            if (!string.IsNullOrEmpty(OcspEndpoint))
-                AddOcspPoints(certificateGenerator, OcspEndpoint);
-
-            if (!string.IsNullOrEmpty(CrlEndpoint))
-                AddCrlDistributionPoints(certificateGenerator, CrlEndpoint);
-
-            // The certificate is signed with the issuer's private key.
-            var certificate = certificateGenerator.Generate(issuerKeyPair.Private, random);
-
-            return ConvertCertificate(certificate, subjectKeyPair, random);
+            return ConvertCertificate(certificate);
         }
 
-        private static SecureRandom GetSecureRandom()
-        {
-            // Since we're on Windows, we'll use the CryptoAPI one (on the assumption
-            // that it might have access to better sources of entropy than the built-in
-            // Bouncy Castle ones):
-            var randomGenerator = new CryptoApiRandomGenerator();
-            var random = new SecureRandom(randomGenerator);
-            return random;
-        }
-        
         /// <summary>
         /// The certificate needs a serial number. This is used for revocation,
         /// and usually should be an incrementing index (which makes it easier to revoke a range of certificates).
         /// Since we don't have anywhere to store the incrementing index, we can just use a random number.
         /// </summary>
-        /// <param name="random"></param>
         /// <returns></returns>
-        private static BigInteger GenerateSerialNumber(SecureRandom random)
+        private BigInteger GenerateSerialNumber()
         {
-            var serialNumber =
-                BigIntegers.CreateRandomInRange(
-                    BigInteger.One, BigInteger.ValueOf(Int64.MaxValue), random);
-            return serialNumber;
+            return BigIntegers.CreateRandomInRange(BigInteger.One, BigInteger.ValueOf(Int64.MaxValue), random);
         }
 
         /// <summary>
         /// Generate a key pair.
         /// </summary>
-        /// <param name="random">The random number generator.</param>
         /// <param name="strength">The key length in bits. For RSA, 2048 bits should be considered the minimum acceptable these days.</param>
         /// <returns></returns>
-        private static AsymmetricCipherKeyPair GenerateKeyPair(SecureRandom random, int strength)
+        private AsymmetricCipherKeyPair GenerateKeyPair(int strength)
         {
             var keyGenerationParameters = new KeyGenerationParameters(random, strength);
 
             var keyPairGenerator = new RsaKeyPairGenerator();
             keyPairGenerator.Init(keyGenerationParameters);
-            var subjectKeyPair = keyPairGenerator.GenerateKeyPair();
-            return subjectKeyPair;
+            return keyPairGenerator.GenerateKeyPair();
         }
 
         /// <summary>
@@ -156,96 +115,58 @@ namespace CreateCertificate
         /// The Bouncy Castle documentation, at http://www.bouncycastle.org/wiki/display/JA1/X.509+Public+Key+Certificate+and+Certification+Request+Generation,
         /// shows how to create this from the issuing certificate. Since we're creating a self-signed certificate, we have to do this slightly differently.
         /// </summary>
-        /// <param name="certificateGenerator"></param>
-        /// <param name="issuerDN"></param>
-        /// <param name="issuerKeyPair"></param>
-        /// <param name="issuerSerialNumber"></param>
-        private static void AddAuthorityKeyIdentifier(X509V3CertificateGenerator certificateGenerator,
-                                                      X509Name issuerDN,
-                                                      AsymmetricCipherKeyPair issuerKeyPair,
-                                                      BigInteger issuerSerialNumber)
+        private void AddAuthorityKeyIdentifier()
         {
-            var authorityKeyIdentifierExtension =
-                new AuthorityKeyIdentifier(
-                    SubjectPublicKeyInfoFactory.CreateSubjectPublicKeyInfo(issuerKeyPair.Public),
-                    new GeneralNames(new GeneralName(issuerDN)),
-                    issuerSerialNumber);
-            certificateGenerator.AddExtension(
-                X509Extensions.AuthorityKeyIdentifier.Id, false, authorityKeyIdentifierExtension);
+            var authorityKeyIdentifierExtension = new AuthorityKeyIdentifier(SubjectPublicKeyInfoFactory.CreateSubjectPublicKeyInfo(issuerKeyPair.Public), new GeneralNames(new GeneralName(new X509Name(issuerName))), issuerSerialNumber);
+            certificateGenerator.AddExtension(X509Extensions.AuthorityKeyIdentifier.Id, false, authorityKeyIdentifierExtension);
         }
 
         /// <summary>
-        /// Add the "Subject Alternative Names" extension. Note that you have to repeat
-        /// the value from the "Subject Name" property.
+        /// Add the "Subject Alternative Names" extension. Note that you have to repeat the value from the "Subject Name" property.
         /// </summary>
-        /// <param name="certificateGenerator"></param>
-        /// <param name="subjectAlternativeNames"></param>
-        private static void AddSubjectAlternativeNames(X509V3CertificateGenerator certificateGenerator,
-                                                       IEnumerable<string> subjectAlternativeNames)
+        private void AddSubjectAlternativeNames()
         {
-            var subjectAlternativeNamesExtension =
-                new DerSequence(
-                    subjectAlternativeNames.Select(name => new GeneralName(GeneralName.DnsName, name))
-                                           .ToArray<Asn1Encodable>());
-
-            certificateGenerator.AddExtension(
-                X509Extensions.SubjectAlternativeName.Id, false, subjectAlternativeNamesExtension);
-        }
-
-        /// <summary>
-        /// Add the "Extended Key Usage" extension, specifying (for example) "server authentication".
-        /// </summary>
-        /// <param name="certificateGenerator"></param>
-        /// <param name="usages"></param>
-        private static void AddExtendedKeyUsage(X509V3CertificateGenerator certificateGenerator, KeyPurposeID[] usages)
-        {
-            certificateGenerator.AddExtension(
-                X509Extensions.ExtendedKeyUsage.Id, false, new ExtendedKeyUsage(usages));
-        }
-
-        /// <summary>
-        /// Add the "Basic Constraints" extension.
-        /// </summary>
-        /// <param name="certificateGenerator"></param>
-        /// <param name="isCertificateAuthority"></param>
-        private static void AddBasicConstraints(X509V3CertificateGenerator certificateGenerator,
-                                                bool isCertificateAuthority)
-        {
-            certificateGenerator.AddExtension(
-                X509Extensions.BasicConstraints.Id, true, new BasicConstraints(isCertificateAuthority));
-        }
-
-        /// <summary>
-        /// Add the Subject Key Identifier.
-        /// </summary>
-        /// <param name="certificateGenerator"></param>
-        /// <param name="subjectKeyPair"></param>
-        private static void AddSubjectKeyIdentifier(X509V3CertificateGenerator certificateGenerator,
-                                                    AsymmetricCipherKeyPair subjectKeyPair)
-        {
-            var subjectKeyIdentifierExtension =
-                new SubjectKeyIdentifier(
-                    SubjectPublicKeyInfoFactory.CreateSubjectPublicKeyInfo(subjectKeyPair.Public));
-            certificateGenerator.AddExtension(
-                X509Extensions.SubjectKeyIdentifier.Id, false, subjectKeyIdentifierExtension);
-        }
-
-        public static void AddOcspPoints(X509V3CertificateGenerator certificateGenerator, string ocspEndpoint)
-        {
-            if (!string.IsNullOrEmpty(ocspEndpoint))
+            if (SubjectAlternativeNames != null && SubjectAlternativeNames.Any())
             {
-                GeneralName generalName = new GeneralName(GeneralName.UniformResourceIdentifier, new DerIA5String(ocspEndpoint));
+                var subjectAlternativeNamesExtension = new DerSequence(SubjectAlternativeNames.Select(name => new GeneralName(GeneralName.DnsName, name)).ToArray<Asn1Encodable>());
+                certificateGenerator.AddExtension(X509Extensions.SubjectAlternativeName.Id, false, subjectAlternativeNamesExtension);
+            }
+        }
+        
+        private void AddExtendedKeyUsage()
+        {
+            if (Usages != null && Usages.Any())
+            {
+                certificateGenerator.AddExtension(X509Extensions.ExtendedKeyUsage.Id, false, new ExtendedKeyUsage(Usages));
+            }
+        }
+        
+        private void AddBasicConstraints()
+        {
+            certificateGenerator.AddExtension(X509Extensions.BasicConstraints.Id, true, new BasicConstraints(IsCertificateAuthority));
+        }
+        
+        private void AddSubjectKeyIdentifier()
+        {
+            var subjectKeyIdentifierExtension = new SubjectKeyIdentifier(SubjectPublicKeyInfoFactory.CreateSubjectPublicKeyInfo(subjectKeyPair.Public));
+            certificateGenerator.AddExtension(X509Extensions.SubjectKeyIdentifier.Id, false, subjectKeyIdentifierExtension);
+        }
+
+        public void AddOcspPoints()
+        {
+            if (!string.IsNullOrEmpty(OcspEndpoint))
+            {
+                GeneralName generalName = new GeneralName(GeneralName.UniformResourceIdentifier, new DerIA5String(OcspEndpoint));
                 var authorityInformationAccess = new AuthorityInformationAccess(new AccessDescription(X509ObjectIdentifiers.OcspAccessMethod, generalName));
                 certificateGenerator.AddExtension(X509Extensions.AuthorityInfoAccess, false, authorityInformationAccess);
             }
         }
 
-        public static void AddCrlDistributionPoints(X509V3CertificateGenerator certificateGenerator, string crlEndpoint)
+        public void AddCrlDistributionPoints()
         {
-            if (!string.IsNullOrEmpty(crlEndpoint))
+            if (!string.IsNullOrEmpty(CrlEndpoint))
             {
-
-                var generalName = new GeneralName(GeneralName.UniformResourceIdentifier, new DerIA5String(crlEndpoint));
+                var generalName = new GeneralName(GeneralName.UniformResourceIdentifier, new DerIA5String(CrlEndpoint));
                 var gns = new GeneralNames(generalName);
                 var dpn = new DistributionPointName(gns);
                 var distp = new DistributionPoint(dpn, null, null);
@@ -255,9 +176,7 @@ namespace CreateCertificate
             }
         }
 
-        private static X509Certificate2 ConvertCertificate(X509Certificate certificate,
-                                                           AsymmetricCipherKeyPair subjectKeyPair,
-                                                           SecureRandom random)
+        private X509Certificate2 ConvertCertificate(X509Certificate certificate)
         {
             // Now to convert the Bouncy Castle certificate to a .NET certificate.
             // See http://web.archive.org/web/20100504192226/http://www.fkollmann.de/v2/post/Creating-certificates-using-BouncyCastle.aspx
@@ -280,10 +199,7 @@ namespace CreateCertificate
             var stream = new MemoryStream();
             store.Save(stream, password.ToCharArray(), random);
 
-            var convertedCertificate =
-                new X509Certificate2(stream.ToArray(),
-                                     password,
-                                     X509KeyStorageFlags.PersistKeySet | X509KeyStorageFlags.Exportable);
+            var convertedCertificate = new X509Certificate2(stream.ToArray(), password, X509KeyStorageFlags.PersistKeySet | X509KeyStorageFlags.Exportable);
             return convertedCertificate;
         }
     }
