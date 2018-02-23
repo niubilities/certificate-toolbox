@@ -12,6 +12,7 @@ namespace CertificateToolbox
         public CertificateDetails Issuer { get; set; }
 
         private readonly CrlServer crlServer;
+        private readonly OcspServer ocspServer;
 
         public CertificateDetails()
         {
@@ -58,11 +59,33 @@ namespace CertificateToolbox
                     return result;
                 }
             };
+
+            ocspServer = new OcspServer
+            {
+                OcspUrl = ocsp_url.Text,
+                GetStatus = () =>
+                {
+                    RevocationStatus result = RevocationStatus.Valid;
+                    Invoke(new MethodInvoker(delegate { result = GetCrlStatus(); }));
+                    return result;
+                },
+                GetOcsp = () =>
+                {
+                    byte[] result = null;
+                    Invoke(new MethodInvoker(delegate { result = GetOcsp(); }));
+                    return result;
+                }
+            };
         }
 
         private RevocationStatus GetCrlStatus()
         {
             return (RevocationStatus)crl_result.SelectedItem;
+        }
+
+        private RevocationStatus GetOcspStatus()
+        {
+            return (RevocationStatus)ocsp_result.SelectedItem;
         }
 
         private BigInteger GetSerialNumber()
@@ -77,9 +100,19 @@ namespace CertificateToolbox
                 Issuer = Issuer == null ? Certificate : Issuer.Certificate,
                 SerialNumber = GetSerialNumber(),
             };
-            return generator.GetCrl(GetCrlStatus());
+            return generator.GetCrl(GetOcspStatus());
         }
-        
+
+        private byte[] GetOcsp()
+        {
+            var generator = new Generator
+            {
+                Issuer = Issuer == null ? Certificate : Issuer.Certificate,
+                SerialNumber = GetSerialNumber(),
+            };
+            return generator.GetOcspResponse(GetOcspStatus());
+        }
+
         public string SubjectAlternativeNames
         {
             get { return Serialize(subject_alternative_names.Rows); }
@@ -99,6 +132,7 @@ namespace CertificateToolbox
         public X509Certificate2 Generate()
         {
             crlServer.Stop();
+            ocspServer.Stop();
 
             RemoveExistingCertificate();
 
@@ -114,6 +148,7 @@ namespace CertificateToolbox
             UpdateThumbprint();
 
             crlServer.Start();
+            ocspServer.Start();
 
             return Certificate;
         }

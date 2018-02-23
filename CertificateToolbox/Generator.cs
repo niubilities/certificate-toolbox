@@ -7,6 +7,7 @@ using Org.BouncyCastle.Crypto;
 using Org.BouncyCastle.Crypto.Generators;
 using Org.BouncyCastle.Crypto.Prng;
 using Org.BouncyCastle.Math;
+using Org.BouncyCastle.Ocsp;
 using Org.BouncyCastle.Pkcs;
 using Org.BouncyCastle.Security;
 using Org.BouncyCastle.X509;
@@ -99,6 +100,24 @@ namespace CertificateToolbox
             var crl = generator.Generate(DotNetUtilities.GetKeyPair(Issuer.PrivateKey).Private);
 
             return crl.GetEncoded();
+        }
+
+        public byte[] GetOcspResponse(RevocationStatus status)
+        {
+            var bouncyCert = DotNetUtilities.FromX509Certificate(Issuer);
+            var gen = new OCSPRespGenerator();
+
+            var basicGen = new BasicOcspRespGenerator(bouncyCert.GetPublicKey());
+
+            basicGen.AddResponse(new CertificateID(CertificateID.HashSha1, bouncyCert, SerialNumber),
+                status == RevocationStatus.Revoked
+                    ? new RevokedStatus(DateTime.UtcNow, CrlReason.CessationOfOperation)
+                    : CertificateStatus.Good);
+
+            var response = basicGen.Generate(basicGen.SignatureAlgNames.Cast<string>().First(), DotNetUtilities.GetKeyPair(Issuer.PrivateKey).Private, new[] { bouncyCert }, DateTime.UtcNow);
+
+            var actualResponse = gen.Generate(0, response);
+            return actualResponse.GetEncoded();
         }
         
         private AsymmetricCipherKeyPair GenerateKeyPair(int bitLength)

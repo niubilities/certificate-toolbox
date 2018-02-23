@@ -59,6 +59,7 @@
     </Compile>
     <Compile Include="CrlServer.cs" />
     <Compile Include="Generator.cs" />
+    <Compile Include="OcspServer.cs" />
     <Compile Include="RevocationStatus.cs" />
     <Compile Include="Shell.cs">
       <SubType>Form</SubType>
