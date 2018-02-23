@@ -57,6 +57,7 @@
             this.serial = new System.Windows.Forms.TextBox();
             this.label4 = new System.Windows.Forms.Label();
             this.thumbprint = new System.Windows.Forms.TextBox();
+            this.remove = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.key_usages)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.subject_alternative_names)).BeginInit();
             this.groupBox2.SuspendLayout();
@@ -270,9 +271,9 @@
             this.install_store.CheckState = System.Windows.Forms.CheckState.Checked;
             this.install_store.Location = new System.Drawing.Point(19, 12);
             this.install_store.Name = "install_store";
-            this.install_store.Size = new System.Drawing.Size(142, 17);
+            this.install_store.Size = new System.Drawing.Size(92, 17);
             this.install_store.TabIndex = 61;
-            this.install_store.Text = "Install in Certificate Store";
+            this.install_store.Text = "Install in Store";
             this.install_store.UseVisualStyleBackColor = true;
             // 
             // subject
@@ -309,7 +310,7 @@
             // 
             this.store_name.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.store_name.FormattingEnabled = true;
-            this.store_name.Location = new System.Drawing.Point(167, 10);
+            this.store_name.Location = new System.Drawing.Point(118, 10);
             this.store_name.Name = "store_name";
             this.store_name.Size = new System.Drawing.Size(121, 21);
             this.store_name.TabIndex = 49;
@@ -347,10 +348,21 @@
             this.thumbprint.Size = new System.Drawing.Size(220, 20);
             this.thumbprint.TabIndex = 66;
             // 
+            // remove
+            // 
+            this.remove.Location = new System.Drawing.Point(257, 12);
+            this.remove.Name = "remove";
+            this.remove.Size = new System.Drawing.Size(44, 23);
+            this.remove.TabIndex = 68;
+            this.remove.Text = "X";
+            this.remove.UseVisualStyleBackColor = true;
+            this.remove.Click += new System.EventHandler(this.remove_Click);
+            // 
             // CertificateDetails
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.Controls.Add(this.remove);
             this.Controls.Add(this.label4);
             this.Controls.Add(this.thumbprint);
             this.Controls.Add(this.not_after);
@@ -412,5 +424,6 @@
         private System.Windows.Forms.TextBox serial;
         private System.Windows.Forms.Label label4;
         private System.Windows.Forms.TextBox thumbprint;
+        private System.Windows.Forms.Button remove;
     }
 }

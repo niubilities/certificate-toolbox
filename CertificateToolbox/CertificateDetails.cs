@@ -132,5 +132,13 @@ namespace CertificateToolbox
                 key_usages.Rows.Clear();
             }
         }
+
+        public event Action<CertificateDetails> RemoveRequested;
+
+        private void remove_Click(object sender, EventArgs e)
+        {
+            RemoveExistingCertificate();
+            RemoveRequested?.Invoke(this);
+        }
     }
 }
