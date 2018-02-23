@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Security.Cryptography.X509Certificates;
 using System.Windows.Forms;
 using Org.BouncyCastle.Math;
@@ -39,6 +40,22 @@ namespace CertificateToolbox
             crl_url.Text = string.Format("http://{0}:{1}/ca.crl", Environment.MachineName, 8180 + serialNumber);
         }
 
+        public string SubjectAlternativeNames
+        {
+            get { return Serialize(subject_alternative_names.Rows); }
+        }
+
+        public string KeyUsages
+        {
+            get { return Serialize(key_usages.Rows);  }
+        }
+
+        private string Serialize(DataGridViewRowCollection rows)
+        {
+            var items = (from DataGridViewRow row in rows where row.Cells[0].Value != null select row.Cells[0].Value.ToString()).ToList();
+            return items.Any() ? string.Join("#", items) : null;
+        }
+
         public X509Certificate2 Generate()
         {
             thumbprint.Text = string.Empty;
@@ -52,6 +69,8 @@ namespace CertificateToolbox
                 NotAfter = not_after.Value,
                 IsCertificateAuthority = is_ca.Checked,
                 Issuer = Issuer?.Generate(),
+                SubjectAlternativeNames = SubjectAlternativeNames?.Split('#'),
+                Usages = KeyUsages?.Split('#'),
                 OcspEndpoint = include_ocsp.Checked?ocsp_url.Text:null,
                 CrlEndpoint = include_crl.Checked ? crl_url.Text : null,
             };

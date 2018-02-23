@@ -23,7 +23,7 @@ namespace CertificateToolbox
         public DateTime NotAfter { get; set; }
         public X509Certificate2 Issuer { get; set; }
         public string[] SubjectAlternativeNames { get; set; }
-        public KeyPurposeID[] Usages { get; set; }
+        public string[] Usages { get; set; }
         public bool IsCertificateAuthority { get; set; }
         public string OcspEndpoint { get; set; }
         public string CrlEndpoint { get; set; }
@@ -108,7 +108,8 @@ namespace CertificateToolbox
         {
             if (Usages != null && Usages.Any())
             {
-                certificateGenerator.AddExtension(X509Extensions.ExtendedKeyUsage.Id, false, new ExtendedKeyUsage(Usages));
+                var usages = Usages.Select(x => x == "client" ? KeyPurposeID.IdKPClientAuth : KeyPurposeID.IdKPServerAuth);
+                certificateGenerator.AddExtension(X509Extensions.ExtendedKeyUsage.Id, false, new ExtendedKeyUsage(usages));
             }
         }
         
