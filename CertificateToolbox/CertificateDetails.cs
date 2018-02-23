@@ -22,7 +22,7 @@ namespace CertificateToolbox
             Issuer = issuer;
 
             serial.Text = serialNumber.ToString();
-            subject.Text = "CN=" + Environment.MachineName + serialNumber;
+            subject.Text = string.Format("CN={0} {1}", Environment.MachineName, serialNumber);
 
             store_name.DataSource = Enum.GetValues(typeof(StoreName));
             store_name.SelectedItem = StoreName.Root;
@@ -57,32 +57,16 @@ namespace CertificateToolbox
         {
             RemoveExistingCertificate();
 
-            thumbprint.Text = string.Empty;
-            Refresh();
+            UpdateThumbprint(string.Empty);
 
-            var generator = new Generator
-            {
-                SerialNumber = new BigInteger(serial.Text),
-                SubjectName = subject.Text,
-                NotBefore = not_before.Value,
-                NotAfter = not_after.Value,
-                IsCertificateAuthority = is_ca.Checked,
-                Issuer = Issuer?.Generate(),
-                SubjectAlternativeNames = SubjectAlternativeNames?.Split('#'),
-                Usages = KeyUsages?.Split('#'),
-                OcspEndpoint = include_ocsp.Checked?ocsp_url.Text:null,
-                CrlEndpoint = include_crl.Checked ? crl_url.Text : null,
-            };
-
-            var certificate = generator.Generate();
+            var certificate = GenerateCertificate();
 
             if (install_store.Checked)
             {
                 Install(certificate);
             }
 
-            thumbprint.Text = certificate.Thumbprint;
-            Refresh();
+            UpdateThumbprint(certificate.Thumbprint);
 
             return certificate;
         }
@@ -110,6 +94,31 @@ namespace CertificateToolbox
             store.Open(OpenFlags.ReadWrite);
             store.Add(certificate);
             store.Close();
+        }
+
+        private X509Certificate2 GenerateCertificate()
+        {
+            var generator = new Generator
+            {
+                SerialNumber = new BigInteger(serial.Text),
+                SubjectName = subject.Text,
+                NotBefore = not_before.Value,
+                NotAfter = not_after.Value,
+                IsCertificateAuthority = is_ca.Checked,
+                Issuer = Issuer?.Generate(),
+                SubjectAlternativeNames = SubjectAlternativeNames?.Split('#'),
+                Usages = KeyUsages?.Split('#'),
+                OcspEndpoint = include_ocsp.Checked ? ocsp_url.Text : null,
+                CrlEndpoint = include_crl.Checked ? crl_url.Text : null,
+            };
+
+            return generator.Generate();
+        }
+
+        private void UpdateThumbprint(string value)
+        {
+            thumbprint.Text = value;
+            Refresh();
         }
 
         private void is_ca_CheckedChanged(object sender, EventArgs e)
