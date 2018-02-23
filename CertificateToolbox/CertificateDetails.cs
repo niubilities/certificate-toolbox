@@ -38,6 +38,9 @@ namespace CertificateToolbox
 
         public X509Certificate2 Generate()
         {
+            thumbprint.Text = string.Empty;
+            Refresh();
+
             var generator = new Generator
             {
                 SerialNumber = new BigInteger(serial.Text),
@@ -57,6 +60,9 @@ namespace CertificateToolbox
                 store.Add(certificate);
                 store.Close();
             }
+
+            thumbprint.Text = certificate.Thumbprint;
+            Refresh();
 
             return certificate;
         }

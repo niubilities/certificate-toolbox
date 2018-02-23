@@ -58,6 +58,8 @@
             this.label13 = new System.Windows.Forms.Label();
             this.label10 = new System.Windows.Forms.Label();
             this.serial = new System.Windows.Forms.TextBox();
+            this.label4 = new System.Windows.Forms.Label();
+            this.thumbprint = new System.Windows.Forms.TextBox();
             ((System.ComponentModel.ISupportInitialize)(this.key_usages)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.subject_alternative_names)).BeginInit();
             this.groupBox2.SuspendLayout();
@@ -66,7 +68,7 @@
             // 
             // not_after
             // 
-            this.not_after.Location = new System.Drawing.Point(17, 286);
+            this.not_after.Location = new System.Drawing.Point(17, 316);
             this.not_after.Name = "not_after";
             this.not_after.Size = new System.Drawing.Size(222, 20);
             this.not_after.TabIndex = 53;
@@ -74,7 +76,7 @@
             // label3
             // 
             this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(16, 270);
+            this.label3.Location = new System.Drawing.Point(16, 300);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(49, 13);
             this.label3.TabIndex = 65;
@@ -83,7 +85,7 @@
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(16, 219);
+            this.label2.Location = new System.Drawing.Point(16, 249);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(58, 13);
             this.label2.TabIndex = 64;
@@ -101,7 +103,7 @@
             this.key_usages.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.key_usages.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
             this.KeyUsage});
-            this.key_usages.Location = new System.Drawing.Point(19, 500);
+            this.key_usages.Location = new System.Drawing.Point(19, 530);
             this.key_usages.Name = "key_usages";
             this.key_usages.Size = new System.Drawing.Size(265, 124);
             this.key_usages.TabIndex = 56;
@@ -117,7 +119,7 @@
             this.subject_alternative_names.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.subject_alternative_names.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
             this.SubjectAlternativeName});
-            this.subject_alternative_names.Location = new System.Drawing.Point(19, 370);
+            this.subject_alternative_names.Location = new System.Drawing.Point(19, 400);
             this.subject_alternative_names.Name = "subject_alternative_names";
             this.subject_alternative_names.Size = new System.Drawing.Size(265, 124);
             this.subject_alternative_names.TabIndex = 55;
@@ -127,7 +129,7 @@
             this.is_ca.AutoSize = true;
             this.is_ca.Checked = true;
             this.is_ca.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.is_ca.Location = new System.Drawing.Point(19, 336);
+            this.is_ca.Location = new System.Drawing.Point(19, 366);
             this.is_ca.Name = "is_ca";
             this.is_ca.Size = new System.Drawing.Size(128, 17);
             this.is_ca.TabIndex = 54;
@@ -224,7 +226,7 @@
             // 
             // not_before
             // 
-            this.not_before.Location = new System.Drawing.Point(19, 235);
+            this.not_before.Location = new System.Drawing.Point(19, 265);
             this.not_before.Name = "not_before";
             this.not_before.Size = new System.Drawing.Size(220, 20);
             this.not_before.TabIndex = 52;
@@ -236,7 +238,7 @@
             this.groupBox2.Controls.Add(this.ocsp_valid);
             this.groupBox2.Controls.Add(this.ocsp_url);
             this.groupBox2.Controls.Add(this.include_ocsp);
-            this.groupBox2.Location = new System.Drawing.Point(19, 652);
+            this.groupBox2.Location = new System.Drawing.Point(19, 682);
             this.groupBox2.Name = "groupBox2";
             this.groupBox2.Size = new System.Drawing.Size(282, 95);
             this.groupBox2.TabIndex = 62;
@@ -276,7 +278,7 @@
             // 
             // subject
             // 
-            this.subject.Location = new System.Drawing.Point(19, 184);
+            this.subject.Location = new System.Drawing.Point(19, 214);
             this.subject.Name = "subject";
             this.subject.Size = new System.Drawing.Size(220, 20);
             this.subject.TabIndex = 51;
@@ -284,7 +286,7 @@
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(16, 168);
+            this.label1.Location = new System.Drawing.Point(16, 198);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(140, 13);
             this.label1.TabIndex = 57;
@@ -297,7 +299,7 @@
             this.groupBox1.Controls.Add(this.crl_valid);
             this.groupBox1.Controls.Add(this.crl_url);
             this.groupBox1.Controls.Add(this.include_crl);
-            this.groupBox1.Location = new System.Drawing.Point(19, 753);
+            this.groupBox1.Location = new System.Drawing.Point(19, 783);
             this.groupBox1.Name = "groupBox1";
             this.groupBox1.Size = new System.Drawing.Size(282, 95);
             this.groupBox1.TabIndex = 63;
@@ -343,7 +345,7 @@
             // label10
             // 
             this.label10.AutoSize = true;
-            this.label10.Location = new System.Drawing.Point(16, 119);
+            this.label10.Location = new System.Drawing.Point(16, 149);
             this.label10.Name = "label10";
             this.label10.Size = new System.Drawing.Size(73, 13);
             this.label10.TabIndex = 58;
@@ -351,15 +353,34 @@
             // 
             // serial
             // 
-            this.serial.Location = new System.Drawing.Point(19, 135);
+            this.serial.Location = new System.Drawing.Point(19, 165);
             this.serial.Name = "serial";
             this.serial.Size = new System.Drawing.Size(220, 20);
             this.serial.TabIndex = 50;
+            // 
+            // label4
+            // 
+            this.label4.AutoSize = true;
+            this.label4.Location = new System.Drawing.Point(16, 108);
+            this.label4.Name = "label4";
+            this.label4.Size = new System.Drawing.Size(60, 13);
+            this.label4.TabIndex = 67;
+            this.label4.Text = "Thumbprint";
+            // 
+            // thumbprint
+            // 
+            this.thumbprint.Location = new System.Drawing.Point(19, 124);
+            this.thumbprint.Name = "thumbprint";
+            this.thumbprint.ReadOnly = true;
+            this.thumbprint.Size = new System.Drawing.Size(220, 20);
+            this.thumbprint.TabIndex = 66;
             // 
             // CertificateDetails
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.Controls.Add(this.label4);
+            this.Controls.Add(this.thumbprint);
             this.Controls.Add(this.not_after);
             this.Controls.Add(this.label3);
             this.Controls.Add(this.label2);
@@ -379,7 +400,7 @@
             this.Controls.Add(this.label10);
             this.Controls.Add(this.serial);
             this.Name = "CertificateDetails";
-            this.Size = new System.Drawing.Size(323, 866);
+            this.Size = new System.Drawing.Size(323, 892);
             ((System.ComponentModel.ISupportInitialize)(this.key_usages)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.subject_alternative_names)).EndInit();
             this.groupBox2.ResumeLayout(false);
@@ -423,5 +444,7 @@
         private System.Windows.Forms.Label label13;
         private System.Windows.Forms.Label label10;
         private System.Windows.Forms.TextBox serial;
+        private System.Windows.Forms.Label label4;
+        private System.Windows.Forms.TextBox thumbprint;
     }
 }
