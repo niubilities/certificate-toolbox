@@ -167,7 +167,6 @@
             this.crl_url.ReadOnly = true;
             this.crl_url.Size = new System.Drawing.Size(184, 20);
             this.crl_url.TabIndex = 0;
-            this.crl_url.Text = "http://EESSIDEV04:8081/ca.crl";
             // 
             // include_crl
             // 
@@ -252,7 +251,6 @@
             this.ocsp_url.ReadOnly = true;
             this.ocsp_url.Size = new System.Drawing.Size(184, 20);
             this.ocsp_url.TabIndex = 0;
-            this.ocsp_url.Text = "http://EESSIDEV04:8081/ca.ocsp";
             // 
             // include_ocsp
             // 

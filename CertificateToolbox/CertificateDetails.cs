@@ -21,7 +21,7 @@ namespace CertificateToolbox
             Issuer = issuer;
 
             serial.Text = serialNumber.ToString();
-            subject.Text = "CN=Mihai" + serialNumber;
+            subject.Text = "CN=" + Environment.MachineName + serialNumber;
 
             store_location.DataSource = Enum.GetValues(typeof(StoreLocation));
             store_name.DataSource = Enum.GetValues(typeof(StoreName));
@@ -34,6 +34,9 @@ namespace CertificateToolbox
 
             subject_alternative_names.ReadOnly = is_ca.Checked;
             key_usages.ReadOnly = is_ca.Checked;
+
+            ocsp_url.Text = string.Format("http://{0}:{1}/ca.ocsp", Environment.MachineName, 8080 + serialNumber);
+            crl_url.Text = string.Format("http://{0}:{1}/ca.crl", Environment.MachineName, 8180 + serialNumber);
         }
 
         public X509Certificate2 Generate()
@@ -48,7 +51,9 @@ namespace CertificateToolbox
                 NotBefore = not_before.Value,
                 NotAfter = not_after.Value,
                 IsCertificateAuthority = is_ca.Checked,
-                Issuer = Issuer?.Generate()
+                Issuer = Issuer?.Generate(),
+                OcspEndpoint = include_ocsp.Checked?ocsp_url.Text:null,
+                CrlEndpoint = include_crl.Checked ? crl_url.Text : null,
             };
 
             var certificate = generator.Generate();
