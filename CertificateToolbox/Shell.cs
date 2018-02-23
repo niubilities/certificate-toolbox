@@ -19,7 +19,7 @@ namespace CertificateToolbox
         {
             button1.Enabled = false;
 
-            LastCert.Generate();
+            LastCert?.Generate();
 
             button1.Enabled = true;
         }
