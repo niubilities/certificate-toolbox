@@ -171,6 +171,8 @@
             // include_crl
             // 
             this.include_crl.AutoSize = true;
+            this.include_crl.Checked = true;
+            this.include_crl.CheckState = System.Windows.Forms.CheckState.Checked;
             this.include_crl.Location = new System.Drawing.Point(204, 21);
             this.include_crl.Name = "include_crl";
             this.include_crl.Size = new System.Drawing.Size(61, 17);
@@ -255,6 +257,8 @@
             // include_ocsp
             // 
             this.include_ocsp.AutoSize = true;
+            this.include_ocsp.Checked = true;
+            this.include_ocsp.CheckState = System.Windows.Forms.CheckState.Checked;
             this.include_ocsp.Location = new System.Drawing.Point(204, 21);
             this.include_ocsp.Name = "include_ocsp";
             this.include_ocsp.Size = new System.Drawing.Size(61, 17);
