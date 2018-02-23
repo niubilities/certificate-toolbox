@@ -15,16 +15,16 @@ namespace CertificateToolbox
         
         public CertificateDetails LastCert => layout.Controls.Cast<CertificateDetails>().LastOrDefault();
 
-        private void button1_Click(object sender, EventArgs e)
+        private void save_Click(object sender, EventArgs e)
         {
-            button1.Enabled = false;
+            save.Enabled = false;
 
             LastCert?.Generate();
 
-            button1.Enabled = true;
+            save.Enabled = true;
         }
         
-        private void button2_Click(object sender, EventArgs e)
+        private void add_Click(object sender, EventArgs e)
         {
             var newCert = new CertificateDetails(serialNumber++, LastCert);
             layout.Controls.Add(newCert);

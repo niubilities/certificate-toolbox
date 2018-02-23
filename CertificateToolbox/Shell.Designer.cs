@@ -28,21 +28,21 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.button1 = new System.Windows.Forms.Button();
+            this.save = new System.Windows.Forms.Button();
             this.layout = new System.Windows.Forms.FlowLayoutPanel();
             this.button2 = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
-            // button1
+            // save
             // 
-            this.button1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.button1.Location = new System.Drawing.Point(1161, 12);
-            this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(75, 101);
-            this.button1.TabIndex = 66;
-            this.button1.Text = "Save";
-            this.button1.UseVisualStyleBackColor = true;
-            this.button1.Click += new System.EventHandler(this.button1_Click);
+            this.save.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.save.Location = new System.Drawing.Point(1161, 12);
+            this.save.Name = "save";
+            this.save.Size = new System.Drawing.Size(75, 101);
+            this.save.TabIndex = 66;
+            this.save.Text = "Save";
+            this.save.UseVisualStyleBackColor = true;
+            this.save.Click += new System.EventHandler(this.save_Click);
             // 
             // layout
             // 
@@ -65,7 +65,7 @@
             this.button2.TabIndex = 69;
             this.button2.Text = "+";
             this.button2.UseVisualStyleBackColor = true;
-            this.button2.Click += new System.EventHandler(this.button2_Click);
+            this.button2.Click += new System.EventHandler(this.add_Click);
             // 
             // Shell
             // 
@@ -74,15 +74,15 @@
             this.ClientSize = new System.Drawing.Size(1248, 605);
             this.Controls.Add(this.button2);
             this.Controls.Add(this.layout);
-            this.Controls.Add(this.button1);
+            this.Controls.Add(this.save);
             this.Name = "Shell";
-            this.Text = "Form1";
+            this.Text = "Certificate Toolbox";
             this.ResumeLayout(false);
 
         }
 
         #endregion
-        private System.Windows.Forms.Button button1;
+        private System.Windows.Forms.Button save;
         private System.Windows.Forms.FlowLayoutPanel layout;
         private System.Windows.Forms.Button button2;
     }
