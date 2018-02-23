@@ -36,28 +36,27 @@
             this.SubjectAlternativeName = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.subject_alternative_names = new System.Windows.Forms.DataGridView();
             this.is_ca = new System.Windows.Forms.CheckBox();
-            this.crl_revoked = new System.Windows.Forms.RadioButton();
-            this.crl_valid = new System.Windows.Forms.RadioButton();
             this.crl_url = new System.Windows.Forms.TextBox();
             this.include_crl = new System.Windows.Forms.CheckBox();
-            this.ocsp_unknown = new System.Windows.Forms.RadioButton();
-            this.ocsp_revoked = new System.Windows.Forms.RadioButton();
-            this.crl_unknown = new System.Windows.Forms.RadioButton();
-            this.ocsp_valid = new System.Windows.Forms.RadioButton();
             this.not_before = new System.Windows.Forms.DateTimePicker();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
+            this.ocsp_result = new System.Windows.Forms.ComboBox();
             this.ocsp_url = new System.Windows.Forms.TextBox();
             this.include_ocsp = new System.Windows.Forms.CheckBox();
+            this.label5 = new System.Windows.Forms.Label();
             this.install_store = new System.Windows.Forms.CheckBox();
             this.subject = new System.Windows.Forms.TextBox();
             this.label1 = new System.Windows.Forms.Label();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.crl_result = new System.Windows.Forms.ComboBox();
+            this.label6 = new System.Windows.Forms.Label();
             this.store_name = new System.Windows.Forms.ComboBox();
             this.label10 = new System.Windows.Forms.Label();
             this.serial = new System.Windows.Forms.TextBox();
             this.label4 = new System.Windows.Forms.Label();
             this.thumbprint = new System.Windows.Forms.TextBox();
             this.remove = new System.Windows.Forms.Button();
+            this.copy = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.key_usages)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.subject_alternative_names)).BeginInit();
             this.groupBox2.SuspendLayout();
@@ -135,29 +134,6 @@
             this.is_ca.UseVisualStyleBackColor = true;
             this.is_ca.CheckedChanged += new System.EventHandler(this.is_ca_CheckedChanged);
             // 
-            // crl_revoked
-            // 
-            this.crl_revoked.AutoSize = true;
-            this.crl_revoked.Location = new System.Drawing.Point(88, 55);
-            this.crl_revoked.Name = "crl_revoked";
-            this.crl_revoked.Size = new System.Drawing.Size(69, 17);
-            this.crl_revoked.TabIndex = 3;
-            this.crl_revoked.TabStop = true;
-            this.crl_revoked.Text = "Revoked";
-            this.crl_revoked.UseVisualStyleBackColor = true;
-            // 
-            // crl_valid
-            // 
-            this.crl_valid.AutoSize = true;
-            this.crl_valid.Checked = true;
-            this.crl_valid.Location = new System.Drawing.Point(14, 55);
-            this.crl_valid.Name = "crl_valid";
-            this.crl_valid.Size = new System.Drawing.Size(48, 17);
-            this.crl_valid.TabIndex = 2;
-            this.crl_valid.TabStop = true;
-            this.crl_valid.Text = "Valid";
-            this.crl_valid.UseVisualStyleBackColor = true;
-            // 
             // crl_url
             // 
             this.crl_url.Location = new System.Drawing.Point(14, 19);
@@ -178,51 +154,6 @@
             this.include_crl.Text = "Include";
             this.include_crl.UseVisualStyleBackColor = true;
             // 
-            // ocsp_unknown
-            // 
-            this.ocsp_unknown.AutoSize = true;
-            this.ocsp_unknown.Location = new System.Drawing.Point(182, 54);
-            this.ocsp_unknown.Name = "ocsp_unknown";
-            this.ocsp_unknown.Size = new System.Drawing.Size(71, 17);
-            this.ocsp_unknown.TabIndex = 4;
-            this.ocsp_unknown.TabStop = true;
-            this.ocsp_unknown.Text = "Unknown";
-            this.ocsp_unknown.UseVisualStyleBackColor = true;
-            // 
-            // ocsp_revoked
-            // 
-            this.ocsp_revoked.AutoSize = true;
-            this.ocsp_revoked.Location = new System.Drawing.Point(88, 55);
-            this.ocsp_revoked.Name = "ocsp_revoked";
-            this.ocsp_revoked.Size = new System.Drawing.Size(69, 17);
-            this.ocsp_revoked.TabIndex = 3;
-            this.ocsp_revoked.TabStop = true;
-            this.ocsp_revoked.Text = "Revoked";
-            this.ocsp_revoked.UseVisualStyleBackColor = true;
-            // 
-            // crl_unknown
-            // 
-            this.crl_unknown.AutoSize = true;
-            this.crl_unknown.Location = new System.Drawing.Point(182, 54);
-            this.crl_unknown.Name = "crl_unknown";
-            this.crl_unknown.Size = new System.Drawing.Size(71, 17);
-            this.crl_unknown.TabIndex = 4;
-            this.crl_unknown.TabStop = true;
-            this.crl_unknown.Text = "Unknown";
-            this.crl_unknown.UseVisualStyleBackColor = true;
-            // 
-            // ocsp_valid
-            // 
-            this.ocsp_valid.AutoSize = true;
-            this.ocsp_valid.Checked = true;
-            this.ocsp_valid.Location = new System.Drawing.Point(14, 55);
-            this.ocsp_valid.Name = "ocsp_valid";
-            this.ocsp_valid.Size = new System.Drawing.Size(48, 17);
-            this.ocsp_valid.TabIndex = 2;
-            this.ocsp_valid.TabStop = true;
-            this.ocsp_valid.Text = "Valid";
-            this.ocsp_valid.UseVisualStyleBackColor = true;
-            // 
             // not_before
             // 
             this.not_before.Location = new System.Drawing.Point(19, 205);
@@ -232,17 +163,24 @@
             // 
             // groupBox2
             // 
-            this.groupBox2.Controls.Add(this.ocsp_unknown);
-            this.groupBox2.Controls.Add(this.ocsp_revoked);
-            this.groupBox2.Controls.Add(this.ocsp_valid);
+            this.groupBox2.Controls.Add(this.ocsp_result);
             this.groupBox2.Controls.Add(this.ocsp_url);
             this.groupBox2.Controls.Add(this.include_ocsp);
+            this.groupBox2.Controls.Add(this.label5);
             this.groupBox2.Location = new System.Drawing.Point(19, 622);
             this.groupBox2.Name = "groupBox2";
             this.groupBox2.Size = new System.Drawing.Size(282, 95);
             this.groupBox2.TabIndex = 62;
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "OCSP";
+            // 
+            // ocsp_result
+            // 
+            this.ocsp_result.FormattingEnabled = true;
+            this.ocsp_result.Location = new System.Drawing.Point(55, 54);
+            this.ocsp_result.Name = "ocsp_result";
+            this.ocsp_result.Size = new System.Drawing.Size(143, 21);
+            this.ocsp_result.TabIndex = 65;
             // 
             // ocsp_url
             // 
@@ -263,6 +201,15 @@
             this.include_ocsp.TabIndex = 1;
             this.include_ocsp.Text = "Include";
             this.include_ocsp.UseVisualStyleBackColor = true;
+            // 
+            // label5
+            // 
+            this.label5.AutoSize = true;
+            this.label5.Location = new System.Drawing.Point(12, 57);
+            this.label5.Name = "label5";
+            this.label5.Size = new System.Drawing.Size(37, 13);
+            this.label5.TabIndex = 64;
+            this.label5.Text = "Result";
             // 
             // install_store
             // 
@@ -294,9 +241,8 @@
             // 
             // groupBox1
             // 
-            this.groupBox1.Controls.Add(this.crl_unknown);
-            this.groupBox1.Controls.Add(this.crl_revoked);
-            this.groupBox1.Controls.Add(this.crl_valid);
+            this.groupBox1.Controls.Add(this.crl_result);
+            this.groupBox1.Controls.Add(this.label6);
             this.groupBox1.Controls.Add(this.crl_url);
             this.groupBox1.Controls.Add(this.include_crl);
             this.groupBox1.Location = new System.Drawing.Point(19, 723);
@@ -305,6 +251,23 @@
             this.groupBox1.TabIndex = 63;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "CRL";
+            // 
+            // crl_result
+            // 
+            this.crl_result.FormattingEnabled = true;
+            this.crl_result.Location = new System.Drawing.Point(55, 55);
+            this.crl_result.Name = "crl_result";
+            this.crl_result.Size = new System.Drawing.Size(143, 21);
+            this.crl_result.TabIndex = 67;
+            // 
+            // label6
+            // 
+            this.label6.AutoSize = true;
+            this.label6.Location = new System.Drawing.Point(12, 58);
+            this.label6.Name = "label6";
+            this.label6.Size = new System.Drawing.Size(37, 13);
+            this.label6.TabIndex = 66;
+            this.label6.Text = "Result";
             // 
             // store_name
             // 
@@ -358,10 +321,21 @@
             this.remove.UseVisualStyleBackColor = true;
             this.remove.Click += new System.EventHandler(this.remove_Click);
             // 
+            // copy
+            // 
+            this.copy.Location = new System.Drawing.Point(257, 64);
+            this.copy.Name = "copy";
+            this.copy.Size = new System.Drawing.Size(44, 23);
+            this.copy.TabIndex = 68;
+            this.copy.Text = "Copy";
+            this.copy.UseVisualStyleBackColor = true;
+            this.copy.Click += new System.EventHandler(this.copy_Click);
+            // 
             // CertificateDetails
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.Controls.Add(this.copy);
             this.Controls.Add(this.remove);
             this.Controls.Add(this.label4);
             this.Controls.Add(this.thumbprint);
@@ -403,14 +377,8 @@
         private System.Windows.Forms.DataGridViewTextBoxColumn SubjectAlternativeName;
         private System.Windows.Forms.DataGridView subject_alternative_names;
         private System.Windows.Forms.CheckBox is_ca;
-        private System.Windows.Forms.RadioButton crl_revoked;
-        private System.Windows.Forms.RadioButton crl_valid;
         private System.Windows.Forms.TextBox crl_url;
         private System.Windows.Forms.CheckBox include_crl;
-        private System.Windows.Forms.RadioButton ocsp_unknown;
-        private System.Windows.Forms.RadioButton ocsp_revoked;
-        private System.Windows.Forms.RadioButton crl_unknown;
-        private System.Windows.Forms.RadioButton ocsp_valid;
         private System.Windows.Forms.DateTimePicker not_before;
         private System.Windows.Forms.GroupBox groupBox2;
         private System.Windows.Forms.TextBox ocsp_url;
@@ -425,5 +393,10 @@
         private System.Windows.Forms.Label label4;
         private System.Windows.Forms.TextBox thumbprint;
         private System.Windows.Forms.Button remove;
+        private System.Windows.Forms.Label label5;
+        private System.Windows.Forms.ComboBox ocsp_result;
+        private System.Windows.Forms.ComboBox crl_result;
+        private System.Windows.Forms.Label label6;
+        private System.Windows.Forms.Button copy;
     }
 }

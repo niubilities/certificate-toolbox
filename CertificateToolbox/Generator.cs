@@ -10,6 +10,7 @@ using Org.BouncyCastle.Math;
 using Org.BouncyCastle.Pkcs;
 using Org.BouncyCastle.Security;
 using Org.BouncyCastle.X509;
+using Org.BouncyCastle.X509.Extension;
 using X509Certificate2 = System.Security.Cryptography.X509Certificates.X509Certificate2;
 using X509KeyStorageFlags = System.Security.Cryptography.X509Certificates.X509KeyStorageFlags;
 
@@ -77,6 +78,27 @@ namespace CertificateToolbox
             var certificate = certificateGenerator.Generate(issuerKeyPair.Private);
 
             return ConvertCertificate(certificate);
+        }
+
+        public byte[] GetCrl(RevocationStatus status)
+        {
+            var generator = new X509V2CrlGenerator();
+
+            generator.SetIssuerDN(new X509Name(Issuer.SubjectName.Name));
+            generator.SetThisUpdate(DateTime.Now.AddDays(-1));
+            generator.SetNextUpdate(DateTime.Now.AddDays(1));
+            generator.SetSignatureAlgorithm("SHA256WithRSA");
+
+            if (status == RevocationStatus.Revoked)
+            {
+                generator.AddCrlEntry(SerialNumber, DateTime.Now.AddHours(-12), CrlReason.KeyCompromise);
+            }
+
+            generator.AddExtension(X509Extensions.AuthorityKeyIdentifier, false, new AuthorityKeyIdentifierStructure(DotNetUtilities.FromX509Certificate(Issuer)));
+            generator.AddExtension(X509Extensions.CrlNumber, false, new CrlNumber(new BigInteger(new byte[] { 0x01 })));
+            var crl = generator.Generate(DotNetUtilities.GetKeyPair(Issuer.PrivateKey).Private);
+
+            return crl.GetEncoded();
         }
         
         private AsymmetricCipherKeyPair GenerateKeyPair(int bitLength)

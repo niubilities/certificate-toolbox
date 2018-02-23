@@ -8,7 +8,10 @@ namespace CertificateToolbox
 {
     public partial class CertificateDetails : UserControl
     {
+        public X509Certificate2 Certificate { get; set; }
         public CertificateDetails Issuer { get; set; }
+
+        private readonly CrlServer crlServer;
 
         public CertificateDetails()
         {
@@ -35,8 +38,48 @@ namespace CertificateToolbox
 
             ocsp_url.Text = string.Format("http://{0}:{1}/ca.ocsp", Environment.MachineName, 8080 + serialNumber);
             crl_url.Text = string.Format("http://{0}:{1}/ca.crl", Environment.MachineName, 8180 + serialNumber);
+
+            ocsp_result.DataSource = Enum.GetValues(typeof(RevocationStatus));
+            crl_result.DataSource = Enum.GetValues(typeof(RevocationStatus));
+
+            crlServer = new CrlServer
+            {
+                CrlUrl = crl_url.Text,
+                GetStatus = () =>
+                {
+                    RevocationStatus result = RevocationStatus.Valid;
+                    Invoke(new MethodInvoker(delegate { result = GetCrlStatus(); }));
+                    return result;
+                },
+                GetCrl = ()=>
+                {
+                    byte[] result = null;
+                    Invoke(new MethodInvoker(delegate { result = GetCrl(); }));
+                    return result;
+                }
+            };
         }
 
+        private RevocationStatus GetCrlStatus()
+        {
+            return (RevocationStatus)crl_result.SelectedItem;
+        }
+
+        private BigInteger GetSerialNumber()
+        {
+            return new BigInteger(serial.Text);
+        }
+
+        private byte[] GetCrl()
+        {
+            var generator = new Generator
+            {
+                Issuer = Issuer == null ? Certificate : Issuer.Certificate,
+                SerialNumber = GetSerialNumber(),
+            };
+            return generator.GetCrl(GetCrlStatus());
+        }
+        
         public string SubjectAlternativeNames
         {
             get { return Serialize(subject_alternative_names.Rows); }
@@ -55,20 +98,24 @@ namespace CertificateToolbox
 
         public X509Certificate2 Generate()
         {
+            crlServer.Stop();
+
             RemoveExistingCertificate();
 
-            UpdateThumbprint(string.Empty);
+            ClearThumbprint();
 
-            var certificate = GenerateCertificate();
+            Certificate = GenerateCertificate();
 
             if (install_store.Checked)
             {
-                Install(certificate);
+                InstallNewCertificate();
             }
 
-            UpdateThumbprint(certificate.Thumbprint);
+            UpdateThumbprint();
 
-            return certificate;
+            crlServer.Start();
+
+            return Certificate;
         }
 
         private void RemoveExistingCertificate()
@@ -88,11 +135,11 @@ namespace CertificateToolbox
             }
         }
 
-        private void Install(X509Certificate2 certificate)
+        private void InstallNewCertificate()
         {
             var store = new X509Store((StoreName)store_name.SelectedItem, StoreLocation.LocalMachine);
             store.Open(OpenFlags.ReadWrite);
-            store.Add(certificate);
+            store.Add(Certificate);
             store.Close();
         }
 
@@ -115,9 +162,15 @@ namespace CertificateToolbox
             return generator.Generate();
         }
 
-        private void UpdateThumbprint(string value)
+        private void ClearThumbprint()
         {
-            thumbprint.Text = value;
+            thumbprint.Clear();
+            Refresh();
+        }
+
+        private void UpdateThumbprint()
+        {
+            thumbprint.Text = Certificate.Thumbprint;
             Refresh();
         }
 
@@ -138,7 +191,13 @@ namespace CertificateToolbox
         private void remove_Click(object sender, EventArgs e)
         {
             RemoveExistingCertificate();
+            crlServer.Stop();
             RemoveRequested?.Invoke(this);
+        }
+
+        private void copy_Click(object sender, EventArgs e)
+        {
+            Clipboard.SetText(thumbprint.Text);
         }
     }
 }

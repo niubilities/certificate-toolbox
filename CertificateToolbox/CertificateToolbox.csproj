@@ -57,7 +57,9 @@
     <Compile Include="CertificateDetails.Designer.cs">
       <DependentUpon>CertificateDetails.cs</DependentUpon>
     </Compile>
+    <Compile Include="CrlServer.cs" />
     <Compile Include="Generator.cs" />
+    <Compile Include="RevocationStatus.cs" />
     <Compile Include="Shell.cs">
       <SubType>Form</SubType>
     </Compile>
