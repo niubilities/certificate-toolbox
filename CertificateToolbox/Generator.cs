@@ -83,6 +83,8 @@ namespace CertificateToolbox
 
         public byte[] GetCrl(RevocationStatus status)
         {
+            if (Issuer == null) return new byte[0];
+
             var generator = new X509V2CrlGenerator();
 
             generator.SetIssuerDN(new X509Name(Issuer.SubjectName.Name));
@@ -104,6 +106,8 @@ namespace CertificateToolbox
 
         public byte[] GetOcspResponse(RevocationStatus status)
         {
+            if (Issuer == null) return new byte[0];
+
             var bouncyCert = DotNetUtilities.FromX509Certificate(Issuer);
             var gen = new OCSPRespGenerator();
 

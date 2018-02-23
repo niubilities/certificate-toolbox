@@ -1,12 +1,13 @@
 ﻿using System;
 using System.Windows.Forms;
 using System.Linq;
+using Org.BouncyCastle.Math;
 
 namespace CertificateToolbox
 {
     public partial class Shell : Form
     {
-        private int serialNumber = 1;
+        private BigInteger serialNumber = BigInteger.Zero;
 
         public Shell()
         {
@@ -26,7 +27,8 @@ namespace CertificateToolbox
         
         private void add_Click(object sender, EventArgs e)
         {
-            var newCert = new CertificateDetails(serialNumber++, LastCert);
+            serialNumber = serialNumber.Add(BigInteger.One);
+            var newCert = new CertificateDetails(serialNumber, LastCert);
             newCert.RemoveRequested += Remove;
             layout.Controls.Add(newCert);
         }

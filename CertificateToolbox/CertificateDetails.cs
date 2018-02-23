@@ -11,20 +11,20 @@ namespace CertificateToolbox
         public X509Certificate2 Certificate { get; set; }
         public CertificateDetails Issuer { get; set; }
 
-        private readonly CrlServer crlServer;
-        private readonly OcspServer ocspServer;
+        private readonly BigInteger serialNo;
 
         public CertificateDetails()
         {
             InitializeComponent();
         }
 
-        public CertificateDetails(int serialNumber, CertificateDetails issuer)
+        public CertificateDetails(BigInteger serialNumber, CertificateDetails issuer)
         {
             InitializeComponent();
 
             Issuer = issuer;
 
+            serialNo = serialNumber;
             serial.Text = serialNumber.ToString();
             subject.Text = string.Format("CN={0} {1}", Environment.MachineName, serialNumber);
 
@@ -36,104 +36,38 @@ namespace CertificateToolbox
 
             subject_alternative_names.ReadOnly = is_ca.Checked;
             key_usages.ReadOnly = is_ca.Checked;
+            
+            ocsp.EndpointUrl = string.Format("http://{0}:{1}/ca.ocsp", Environment.MachineName, serialNo.Add(new BigInteger("8080")));
+            ocsp.GetResponse = GetOcsp;
+            ocsp.Start();
 
-            ocsp_url.Text = string.Format("http://{0}:{1}/ca.ocsp", Environment.MachineName, 8080 + serialNumber);
-            crl_url.Text = string.Format("http://{0}:{1}/ca.crl", Environment.MachineName, 8180 + serialNumber);
-
-            ocsp_result.DataSource = Enum.GetValues(typeof(RevocationStatus));
-            crl_result.DataSource = Enum.GetValues(typeof(RevocationStatus));
-
-            crlServer = new CrlServer
-            {
-                CrlUrl = crl_url.Text,
-                GetStatus = () =>
-                {
-                    RevocationStatus result = RevocationStatus.Valid;
-                    Invoke(new MethodInvoker(delegate { result = GetCrlStatus(); }));
-                    return result;
-                },
-                GetCrl = ()=>
-                {
-                    byte[] result = null;
-                    Invoke(new MethodInvoker(delegate { result = GetCrl(); }));
-                    return result;
-                }
-            };
-
-            ocspServer = new OcspServer
-            {
-                OcspUrl = ocsp_url.Text,
-                GetStatus = () =>
-                {
-                    RevocationStatus result = RevocationStatus.Valid;
-                    Invoke(new MethodInvoker(delegate { result = GetCrlStatus(); }));
-                    return result;
-                },
-                GetOcsp = () =>
-                {
-                    byte[] result = null;
-                    Invoke(new MethodInvoker(delegate { result = GetOcsp(); }));
-                    return result;
-                }
-            };
+            crl.EndpointUrl = string.Format("http://{0}:{1}/ca.crl", Environment.MachineName, serialNo.Add(new BigInteger("8180")));
+            crl.GetResponse = GetCrl;
+            crl.Start();
         }
-
-        private RevocationStatus GetCrlStatus()
-        {
-            return (RevocationStatus)crl_result.SelectedItem;
-        }
-
-        private RevocationStatus GetOcspStatus()
-        {
-            return (RevocationStatus)ocsp_result.SelectedItem;
-        }
-
-        private BigInteger GetSerialNumber()
-        {
-            return new BigInteger(serial.Text);
-        }
-
-        private byte[] GetCrl()
+        
+        private byte[] GetCrl(RevocationStatus status)
         {
             var generator = new Generator
             {
                 Issuer = Issuer == null ? Certificate : Issuer.Certificate,
-                SerialNumber = GetSerialNumber(),
+                SerialNumber = serialNo,
             };
-            return generator.GetCrl(GetOcspStatus());
+            return generator.GetCrl(status);
         }
 
-        private byte[] GetOcsp()
+        private byte[] GetOcsp(RevocationStatus status)
         {
             var generator = new Generator
             {
                 Issuer = Issuer == null ? Certificate : Issuer.Certificate,
-                SerialNumber = GetSerialNumber(),
+                SerialNumber = serialNo,
             };
-            return generator.GetOcspResponse(GetOcspStatus());
+            return generator.GetOcspResponse(status);
         }
-
-        public string SubjectAlternativeNames
-        {
-            get { return Serialize(subject_alternative_names.Rows); }
-        }
-
-        public string KeyUsages
-        {
-            get { return Serialize(key_usages.Rows);  }
-        }
-
-        private string Serialize(DataGridViewRowCollection rows)
-        {
-            var items = (from DataGridViewRow row in rows where row.Cells[0].Value != null select row.Cells[0].Value.ToString()).ToList();
-            return items.Any() ? string.Join("#", items) : null;
-        }
-
+        
         public X509Certificate2 Generate()
         {
-            crlServer.Stop();
-            ocspServer.Stop();
-
             RemoveExistingCertificate();
 
             ClearThumbprint();
@@ -146,10 +80,7 @@ namespace CertificateToolbox
             }
 
             UpdateThumbprint();
-
-            crlServer.Start();
-            ocspServer.Start();
-
+            
             return Certificate;
         }
 
@@ -188,13 +119,18 @@ namespace CertificateToolbox
                 NotAfter = not_after.Value,
                 IsCertificateAuthority = is_ca.Checked,
                 Issuer = Issuer?.Generate(),
-                SubjectAlternativeNames = SubjectAlternativeNames?.Split('#'),
-                Usages = KeyUsages?.Split('#'),
-                OcspEndpoint = include_ocsp.Checked ? ocsp_url.Text : null,
-                CrlEndpoint = include_crl.Checked ? crl_url.Text : null,
+                SubjectAlternativeNames = Serialize(subject_alternative_names.Rows),
+                Usages = Serialize(key_usages.Rows),
+                OcspEndpoint = ocsp.EndpointUrl,
+                CrlEndpoint = crl.EndpointUrl
             };
 
             return generator.Generate();
+        }
+        
+        private string[] Serialize(DataGridViewRowCollection rows)
+        {
+            return (from DataGridViewRow row in rows where row.Cells[0].Value != null select row.Cells[0].Value.ToString()).ToArray();
         }
 
         private void ClearThumbprint()
@@ -226,7 +162,6 @@ namespace CertificateToolbox
         private void remove_Click(object sender, EventArgs e)
         {
             RemoveExistingCertificate();
-            crlServer.Stop();
             RemoveRequested?.Invoke(this);
         }
 

@@ -1,0 +1,74 @@
+﻿using System;
+using System.Net;
+using System.Windows.Forms;
+
+namespace CertificateToolbox
+{
+    public partial class RevocationEndpoint : UserControl
+    {
+        private HttpListener listener;
+        private RevocationStatus status;
+
+        public string EndpointUrl
+        {
+            get { return include.Checked ? url.Text : null; }
+            set { url.Text = value; }
+        }
+        
+        public string RevocationType
+        {
+            get { return groupBox2.Text; }
+            set { groupBox2.Text = value; }
+        }
+
+        public string ContentType { get; set; }
+
+        public Func<RevocationStatus, byte[]> GetResponse { get; set; }
+
+        public RevocationEndpoint()
+        {
+            InitializeComponent();
+
+            result.DataSource = Enum.GetValues(typeof(RevocationStatus));
+        }
+
+        public void Start()
+        {
+            listener = new HttpListener();
+            var uri = new Uri(EndpointUrl);
+            var baseUrl = $"{uri.Scheme}://{uri.Host}:{uri.Port}/";
+            listener.Prefixes.Add(baseUrl);
+            listener.Start();
+
+            listener.BeginGetContext(ListenerCallback, listener);
+        }
+
+        private void ListenerCallback(IAsyncResult asyncResult)
+        {
+            HttpListener state = (HttpListener)asyncResult.AsyncState;
+            HttpListenerContext context = state.EndGetContext(asyncResult);
+            
+            if (status == RevocationStatus.Unknown)
+            {
+                context.Response.StatusCode = 404;
+            }
+            else
+            {
+                var response = GetResponse(status);
+                context.Response.ContentType = ContentType;
+                context.Response.ContentLength64 = response.Length;
+                context.Response.OutputStream.Write(response, 0, response.Length);
+                context.Response.OutputStream.Close();
+            }
+
+            context.Response.Close();
+
+            state.BeginGetContext(ListenerCallback, state);
+        }
+
+        private void result_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            status = (RevocationStatus)result.SelectedItem;
+        }
+    }
+}

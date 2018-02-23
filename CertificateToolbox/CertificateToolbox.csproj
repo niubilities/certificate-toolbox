@@ -57,9 +57,13 @@
     <Compile Include="CertificateDetails.Designer.cs">
       <DependentUpon>CertificateDetails.cs</DependentUpon>
     </Compile>
-    <Compile Include="CrlServer.cs" />
     <Compile Include="Generator.cs" />
-    <Compile Include="OcspServer.cs" />
+    <Compile Include="RevocationEndpoint.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="RevocationEndpoint.Designer.cs">
+      <DependentUpon>RevocationEndpoint.cs</DependentUpon>
+    </Compile>
     <Compile Include="RevocationStatus.cs" />
     <Compile Include="Shell.cs">
       <SubType>Form</SubType>
@@ -71,6 +75,9 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <EmbeddedResource Include="CertificateDetails.resx">
       <DependentUpon>CertificateDetails.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="RevocationEndpoint.resx">
+      <DependentUpon>RevocationEndpoint.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Shell.resx">
       <DependentUpon>Shell.cs</DependentUpon>
