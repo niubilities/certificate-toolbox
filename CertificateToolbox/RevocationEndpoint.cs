@@ -28,10 +28,10 @@ namespace CertificateToolbox
         public RevocationEndpoint()
         {
             InitializeComponent();
-
+            
             result.DataSource = Enum.GetValues(typeof(RevocationStatus));
         }
-
+        
         public void Start()
         {
             listener = new HttpListener();
@@ -39,31 +39,51 @@ namespace CertificateToolbox
             var baseUrl = $"{uri.Scheme}://{uri.Host}:{uri.Port}/";
             listener.Prefixes.Add(baseUrl);
             listener.Start();
-
             listener.BeginGetContext(ListenerCallback, listener);
+        }
+
+        private bool stopRequested;
+
+        public void Stop()
+        {
+            stopRequested = true;
+            listener.Close();
         }
 
         private void ListenerCallback(IAsyncResult asyncResult)
         {
-            HttpListener state = (HttpListener)asyncResult.AsyncState;
-            HttpListenerContext context = state.EndGetContext(asyncResult);
-            
-            if (status == RevocationStatus.Unknown)
+            try
             {
-                context.Response.StatusCode = 404;
+                if (stopRequested) return;
+
+                HttpListenerContext context = listener.EndGetContext(asyncResult);
+
+                if (status == RevocationStatus.Unknown)
+                {
+                    context.Response.StatusCode = 404;
+                }
+                else
+                {
+                    var response = GetResponse(status);
+                    context.Response.ContentType = ContentType;
+                    context.Response.ContentLength64 = response.Length;
+                    context.Response.OutputStream.Write(response, 0, response.Length);
+                    context.Response.OutputStream.Close();
+                }
+
+                context.Response.Close();
             }
-            else
+            catch (Exception exception)
             {
-                var response = GetResponse(status);
-                context.Response.ContentType = ContentType;
-                context.Response.ContentLength64 = response.Length;
-                context.Response.OutputStream.Write(response, 0, response.Length);
-                context.Response.OutputStream.Close();
+                MessageBox.Show(exception.ToString());
             }
-
-            context.Response.Close();
-
-            state.BeginGetContext(ListenerCallback, state);
+            finally
+            {
+                if (!stopRequested)
+                {
+                    listener.BeginGetContext(ListenerCallback, listener);
+                }
+            }
         }
 
         private void result_SelectedIndexChanged(object sender, EventArgs e)

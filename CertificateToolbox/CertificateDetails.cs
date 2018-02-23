@@ -162,7 +162,14 @@ namespace CertificateToolbox
         private void remove_Click(object sender, EventArgs e)
         {
             RemoveExistingCertificate();
+            StopRevocationServers();
             RemoveRequested?.Invoke(this);
+        }
+        
+        private void StopRevocationServers()
+        {
+            ocsp.Stop();
+            crl.Stop();
         }
 
         private void copy_Click(object sender, EventArgs e)

@@ -42,7 +42,10 @@ namespace CertificateToolbox
                 ((CertificateDetails)layout.Controls[i]).Issuer = (CertificateDetails)layout.Controls[i - 1];
             }
 
-            ((CertificateDetails)layout.Controls[0]).Issuer = null;
+            if (layout.Controls.Count > 0)
+            {
+                ((CertificateDetails)layout.Controls[0]).Issuer = null;
+            }
         }
     }
 }
