@@ -1,4 +1,4 @@
-bouncy-castle-csharp
+certificate-toolbox
 ====================
 
-Source code for my "Creating certificates using Bouncy Castle" series of blog entries. See http://blog.differentpla.net/blog/2013/03/18/using-bouncy-castle-from-net
+This work is based on source code from "Creating certificates using Bouncy Castle" series of blog entries. See http://blog.differentpla.net/blog/2013/03/18/using-bouncy-castle-from-net
