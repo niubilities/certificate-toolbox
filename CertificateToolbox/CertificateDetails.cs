@@ -31,6 +31,9 @@ namespace CertificateToolbox
 
             not_before.Value = DateTime.UtcNow.AddDays(-1);
             not_after.Value = DateTime.UtcNow.AddYears(100);
+
+            subject_alternative_names.ReadOnly = is_ca.Checked;
+            key_usages.ReadOnly = is_ca.Checked;
         }
 
         public X509Certificate2 Generate()
@@ -41,7 +44,7 @@ namespace CertificateToolbox
                 SubjectName = subject.Text,
                 NotBefore = not_before.Value,
                 NotAfter = not_after.Value,
-                IsCertificateAuthority = true,
+                IsCertificateAuthority = is_ca.Checked,
                 Issuer = Issuer?.Generate()
             };
 
@@ -56,6 +59,18 @@ namespace CertificateToolbox
             }
 
             return certificate;
+        }
+
+        private void is_ca_CheckedChanged(object sender, EventArgs e)
+        {
+            subject_alternative_names.ReadOnly = is_ca.Checked;
+            key_usages.ReadOnly = is_ca.Checked;
+
+            if (is_ca.Checked)
+            {
+                subject_alternative_names.Rows.Clear();
+                key_usages.Rows.Clear();
+            }
         }
     }
 }

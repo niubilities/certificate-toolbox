@@ -133,6 +133,7 @@
             this.is_ca.TabIndex = 54;
             this.is_ca.Text = "Is Certificate Authority";
             this.is_ca.UseVisualStyleBackColor = true;
+            this.is_ca.CheckedChanged += new System.EventHandler(this.is_ca_CheckedChanged);
             // 
             // crl_revoked
             // 
