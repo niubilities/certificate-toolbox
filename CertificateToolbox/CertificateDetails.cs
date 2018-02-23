@@ -24,10 +24,7 @@ namespace CertificateToolbox
             serial.Text = serialNumber.ToString();
             subject.Text = "CN=" + Environment.MachineName + serialNumber;
 
-            store_location.DataSource = Enum.GetValues(typeof(StoreLocation));
             store_name.DataSource = Enum.GetValues(typeof(StoreName));
-
-            store_location.SelectedItem = StoreLocation.LocalMachine;
             store_name.SelectedItem = StoreName.Root;
 
             not_before.Value = DateTime.UtcNow.AddDays(-1);
@@ -58,6 +55,8 @@ namespace CertificateToolbox
 
         public X509Certificate2 Generate()
         {
+            RemoveExistingCertificate();
+
             thumbprint.Text = string.Empty;
             Refresh();
 
@@ -79,16 +78,38 @@ namespace CertificateToolbox
 
             if (install_store.Checked)
             {
-                var store = new X509Store((StoreName)store_name.SelectedItem, (StoreLocation)store_location.SelectedItem);
-                store.Open(OpenFlags.ReadWrite);
-                store.Add(certificate);
-                store.Close();
+                Install(certificate);
             }
 
             thumbprint.Text = certificate.Thumbprint;
             Refresh();
 
             return certificate;
+        }
+
+        private void RemoveExistingCertificate()
+        {
+            if (string.IsNullOrEmpty(thumbprint.Text)) return;
+
+            foreach(StoreName storeName in Enum.GetValues(typeof(StoreName)))
+            {
+                var store = new X509Store(storeName, StoreLocation.LocalMachine);
+                store.Open(OpenFlags.ReadWrite | OpenFlags.MaxAllowed);
+                var certificates = store.Certificates.Find(X509FindType.FindByThumbprint, thumbprint.Text, false);
+                if (certificates.Count == 1)
+                {
+                    store.Remove(certificates[0]);
+                }
+                store.Close();
+            }
+        }
+
+        private void Install(X509Certificate2 certificate)
+        {
+            var store = new X509Store((StoreName)store_name.SelectedItem, StoreLocation.LocalMachine);
+            store.Open(OpenFlags.ReadWrite);
+            store.Add(certificate);
+            store.Close();
         }
 
         private void is_ca_CheckedChanged(object sender, EventArgs e)
