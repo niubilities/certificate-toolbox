@@ -77,6 +77,7 @@
             this.Controls.Add(this.save);
             this.Name = "Shell";
             this.Text = "Certificate Toolbox";
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Shell_FormClosing);
             this.ResumeLayout(false);
 
         }

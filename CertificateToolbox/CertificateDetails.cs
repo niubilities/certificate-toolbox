@@ -84,7 +84,7 @@ namespace CertificateToolbox
             return Certificate;
         }
 
-        private void RemoveExistingCertificate()
+        public void RemoveExistingCertificate()
         {
             if (string.IsNullOrEmpty(thumbprint.Text)) return;
 

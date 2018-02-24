@@ -47,5 +47,13 @@ namespace CertificateToolbox
                 ((CertificateDetails)layout.Controls[0]).Issuer = null;
             }
         }
+
+        private void Shell_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            for (int i = layout.Controls.Count - 1; i >= 0; i--)
+            {
+                ((CertificateDetails)layout.Controls[i]).RemoveExistingCertificate();
+            }
+        }
     }
 }
