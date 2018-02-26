@@ -11,8 +11,8 @@ namespace KeyGenerator
     {
         static void Main(string[] args)
         {
-            string filename = args[1];
-            int count = int.Parse(args[2]);
+            string filename = args[0];
+            int count = int.Parse(args[1]);
 
             const int bitLength = 2048;
 
