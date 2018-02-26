@@ -4,11 +4,11 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{4A5F0EFD-F100-44DE-BE3C-63531F1B8C37}</ProjectGuid>
-    <OutputType>WinExe</OutputType>
+    <ProjectGuid>{244CC588-8FC8-4F7A-AC0C-4C10F7BF5A51}</ProjectGuid>
+    <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>CertificateToolbox</RootNamespace>
-    <AssemblyName>CertificateToolbox</AssemblyName>
+    <RootNamespace>KeyGenerator</RootNamespace>
+    <AssemblyName>KeyGenerator</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
@@ -44,68 +44,16 @@
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
-    <Reference Include="System.Deployment" />
-    <Reference Include="System.Drawing" />
     <Reference Include="System.Net.Http" />
-    <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="CertificateDetails.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="CertificateDetails.Designer.cs">
-      <DependentUpon>CertificateDetails.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Generator.cs" />
-    <Compile Include="KeyRepository.cs" />
-    <Compile Include="RevocationEndpoint.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="RevocationEndpoint.Designer.cs">
-      <DependentUpon>RevocationEndpoint.cs</DependentUpon>
-    </Compile>
-    <Compile Include="RevocationStatus.cs" />
-    <Compile Include="Shell.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="Shell.Designer.cs">
-      <DependentUpon>Shell.cs</DependentUpon>
-    </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <EmbeddedResource Include="CertificateDetails.resx">
-      <DependentUpon>CertificateDetails.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="RevocationEndpoint.resx">
-      <DependentUpon>RevocationEndpoint.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Shell.resx">
-      <DependentUpon>Shell.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Properties\Resources.resx">
-      <Generator>ResXFileCodeGenerator</Generator>
-      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
-      <SubType>Designer</SubType>
-    </EmbeddedResource>
-    <Compile Include="Properties\Resources.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Resources.resx</DependentUpon>
-      <DesignTime>True</DesignTime>
-    </Compile>
-    <None Include="packages.config" />
-    <None Include="Properties\Settings.settings">
-      <Generator>SettingsSingleFileGenerator</Generator>
-      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
-    </None>
-    <Compile Include="Properties\Settings.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Settings.settings</DependentUpon>
-      <DesignTimeSharedInput>True</DesignTimeSharedInput>
-    </Compile>
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+    <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

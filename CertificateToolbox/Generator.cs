@@ -4,7 +4,6 @@ using System.Linq;
 using Org.BouncyCastle.Asn1;
 using Org.BouncyCastle.Asn1.X509;
 using Org.BouncyCastle.Crypto;
-using Org.BouncyCastle.Crypto.Generators;
 using Org.BouncyCastle.Crypto.Prng;
 using Org.BouncyCastle.Math;
 using Org.BouncyCastle.Ocsp;
@@ -46,7 +45,7 @@ namespace CertificateToolbox
 
         public X509Certificate2 Generate()
         {
-            subjectKeyPair = GenerateKeyPair(2048);
+            subjectKeyPair = KeyRepository.Next();
             
             if (Issuer == null)
             {
@@ -124,15 +123,6 @@ namespace CertificateToolbox
             return actualResponse.GetEncoded();
         }
         
-        private AsymmetricCipherKeyPair GenerateKeyPair(int bitLength)
-        {
-            var keyGenerationParameters = new KeyGenerationParameters(random, bitLength);
-
-            var keyPairGenerator = new RsaKeyPairGenerator();
-            keyPairGenerator.Init(keyGenerationParameters);
-            return keyPairGenerator.GenerateKeyPair();
-        }
-
         private void AddAuthorityKeyIdentifier()
         {
             var authorityKeyIdentifierExtension = new AuthorityKeyIdentifier(SubjectPublicKeyInfoFactory.CreateSubjectPublicKeyInfo(issuerKeyPair.Public), new GeneralNames(new GeneralName(new X509Name(issuerName))), issuerSerialNumber);
