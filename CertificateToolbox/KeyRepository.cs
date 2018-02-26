@@ -27,7 +27,16 @@ namespace CertificateToolbox
         {
             if (pem != null)
             {
-                return (AsymmetricCipherKeyPair)pem.ReadObject();
+                var keyPair = (AsymmetricCipherKeyPair) pem.ReadObject();
+
+                if (keyPair != null)
+                {
+                    return keyPair;
+                }
+
+                reader.DiscardBufferedData();
+                reader.BaseStream.Seek(0, SeekOrigin.Begin);
+                return (AsymmetricCipherKeyPair) pem.ReadObject();
             }
 
             var random = new SecureRandom(new CryptoApiRandomGenerator());
