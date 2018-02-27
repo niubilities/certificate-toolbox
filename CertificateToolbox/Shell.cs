@@ -14,7 +14,10 @@ namespace CertificateToolbox
             InitializeComponent();
         }
         
-        public CertificateDetails LastCert => layout.Controls.Cast<CertificateDetails>().LastOrDefault();
+        public CertificateDetails LastCert
+        {
+            get { return layout.Controls.Cast<CertificateDetails>().LastOrDefault(); }
+        }
 
         private void save_Click(object sender, EventArgs e)
         {

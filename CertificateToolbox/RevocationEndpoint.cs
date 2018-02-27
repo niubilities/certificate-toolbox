@@ -36,7 +36,7 @@ namespace CertificateToolbox
         {
             listener = new HttpListener();
             var uri = new Uri(EndpointUrl);
-            var baseUrl = $"{uri.Scheme}://{uri.Host}:{uri.Port}/";
+            var baseUrl = string.Format("{0}://{1}:{2}/", uri.Scheme, uri.Host, uri.Port);
             listener.Prefixes.Add(baseUrl);
             listener.Start();
             listener.BeginGetContext(ListenerCallback, listener);
