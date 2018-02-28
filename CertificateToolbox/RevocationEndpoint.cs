@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Net;
 using System.Windows.Forms;
 
@@ -70,6 +71,8 @@ namespace CertificateToolbox
                     context.Response.OutputStream.Write(response, 0, response.Length);
                     context.Response.OutputStream.Close();
                 }
+
+                File.AppendAllText("revocation.log", EndpointUrl + Environment.NewLine);
 
                 context.Response.Close();
             }
