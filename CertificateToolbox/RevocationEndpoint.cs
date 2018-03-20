@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -8,7 +9,7 @@ namespace CertificateToolbox
 {
     public partial class RevocationEndpoint : UserControl
     {
-        private HttpListener[] listeners;
+        private List<HttpListener> listeners;
 
         public string RevocationType
         {
@@ -28,6 +29,7 @@ namespace CertificateToolbox
         public RevocationEndpoint()
         {
             InitializeComponent();
+            listeners = new List<HttpListener>();
             RevocationStatusColumn.DataSource = Enum.GetValues(typeof(RevocationStatus));
             RevocationStatusColumn.ValueType = typeof(RevocationStatus);
         }
@@ -41,6 +43,8 @@ namespace CertificateToolbox
         
         public void Start()
         {
+            stopRequested = false;
+
             foreach (DataGridViewRow row in dataGridView1.Rows)
             {
                 if (row.Cells[0].Value == null)
@@ -48,12 +52,13 @@ namespace CertificateToolbox
                     continue;
                 }
                 var listener = new HttpListener();
+                listeners.Add(listener);
                 var baseUrl = GetUrl(row.Cells[0].Value.ToString());
                 listener.Prefixes.Add(baseUrl);
                 listener.Start();
                 listener.BeginGetContext(ListenerCallback, new MyState
                 {
-                    Listener = listener, Status = (RevocationStatus)row.Cells[1].Value
+                    Listener = listener, GetStatus = ()=>(RevocationStatus)row.Cells[1].Value
                 });
             }
         }
@@ -68,7 +73,7 @@ namespace CertificateToolbox
         public class MyState
         {
             public HttpListener Listener { get; set; }
-            public RevocationStatus Status { get; set; }
+            public Func<RevocationStatus> GetStatus { get; set; }
         }
 
         public void Stop()
@@ -78,6 +83,7 @@ namespace CertificateToolbox
             {
                 listener.Close();
             }
+            listeners.Clear();
         }
 
         private void ListenerCallback(IAsyncResult asyncResult)
@@ -91,13 +97,14 @@ namespace CertificateToolbox
 
                 HttpListenerContext context = listener.EndGetContext(asyncResult);
 
-                var response = GetResponse(state.Status);
+                var status = state.GetStatus();
+                var response = GetResponse(status);
                 context.Response.ContentType = ContentType;
                 context.Response.ContentLength64 = response.Length;
                 context.Response.OutputStream.Write(response, 0, response.Length);
                 context.Response.OutputStream.Close();
 
-                File.AppendAllText("revocation.log", context.Request.Url + Environment.NewLine);
+                File.AppendAllText("revocation.log", context.Request.Url + status.ToString() + Environment.NewLine);
 
                 context.Response.Close();
             }
@@ -109,7 +116,7 @@ namespace CertificateToolbox
             {
                 if (!stopRequested)
                 {
-                    listener.BeginGetContext(ListenerCallback, listener);
+                    listener.BeginGetContext(ListenerCallback, state);
                 }
             }
         }

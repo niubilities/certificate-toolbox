@@ -39,11 +39,9 @@ namespace CertificateToolbox
             
             ocsp.Add();
             ocsp.GetResponse = GetOcsp;
-            ocsp.Start();
 
             crl.Add();
             crl.GetResponse = GetCrl;
-            crl.Start();
         }
         
         private byte[] GetCrl(RevocationStatus status)
@@ -68,11 +66,13 @@ namespace CertificateToolbox
         
         public X509Certificate2 Generate()
         {
+            StopRevocationServers();
+
             RemoveExistingCertificate();
 
             ClearThumbprint();
 
-            Certificate = GenerateCertificate();
+            GenerateCertificate();
 
             if (install_store.Checked)
             {
@@ -80,7 +80,9 @@ namespace CertificateToolbox
             }
 
             UpdateThumbprint();
-            
+
+            StartRevocationServers();
+
             return Certificate;
         }
 
@@ -109,7 +111,7 @@ namespace CertificateToolbox
             store.Close();
         }
 
-        private X509Certificate2 GenerateCertificate()
+        private void GenerateCertificate()
         {
             var generator = new Generator
             {
@@ -125,7 +127,7 @@ namespace CertificateToolbox
                 CrlEndpoints = crl.Urls
             };
 
-            return generator.Generate();
+            Certificate = generator.Generate();
         }
         
         private string[] Serialize(DataGridViewRowCollection rows)
@@ -143,6 +145,18 @@ namespace CertificateToolbox
         {
             thumbprint.Text = Certificate.Thumbprint;
             Refresh();
+        }
+
+        private void StartRevocationServers()
+        {
+            ocsp.Start();
+            crl.Start();
+        }
+        
+        private void StopRevocationServers()
+        {
+            ocsp.Stop();
+            crl.Stop();
         }
 
         private void is_ca_CheckedChanged(object sender, EventArgs e)
@@ -166,12 +180,6 @@ namespace CertificateToolbox
             RemoveRequested?.Invoke(this);
         }
         
-        private void StopRevocationServers()
-        {
-            ocsp.Stop();
-            crl.Stop();
-        }
-
         private void copy_Click(object sender, EventArgs e)
         {
             Clipboard.SetText(thumbprint.Text);
