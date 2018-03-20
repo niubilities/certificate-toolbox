@@ -29,64 +29,58 @@
         private void InitializeComponent()
         {
             this.groupBox2 = new System.Windows.Forms.GroupBox();
-            this.result = new System.Windows.Forms.ComboBox();
-            this.url = new System.Windows.Forms.TextBox();
-            this.include = new System.Windows.Forms.CheckBox();
-            this.label5 = new System.Windows.Forms.Label();
+            this.dataGridView1 = new System.Windows.Forms.DataGridView();
+            this.PortColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.RevocationStatusColumn = new System.Windows.Forms.DataGridViewComboBoxColumn();
             this.groupBox2.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).BeginInit();
             this.SuspendLayout();
             // 
             // groupBox2
             // 
-            this.groupBox2.Controls.Add(this.result);
-            this.groupBox2.Controls.Add(this.url);
-            this.groupBox2.Controls.Add(this.include);
-            this.groupBox2.Controls.Add(this.label5);
+            this.groupBox2.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.groupBox2.Controls.Add(this.dataGridView1);
             this.groupBox2.Location = new System.Drawing.Point(3, 3);
             this.groupBox2.Name = "groupBox2";
-            this.groupBox2.Size = new System.Drawing.Size(282, 95);
+            this.groupBox2.Size = new System.Drawing.Size(282, 148);
             this.groupBox2.TabIndex = 63;
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "Type";
             // 
-            // result
+            // dataGridView1
             // 
-            this.result.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.result.FormattingEnabled = true;
-            this.result.Location = new System.Drawing.Point(55, 54);
-            this.result.Name = "result";
-            this.result.Size = new System.Drawing.Size(143, 21);
-            this.result.TabIndex = 65;
-            this.result.SelectedIndexChanged += new System.EventHandler(this.result_SelectedIndexChanged);
+            this.dataGridView1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.dataGridView1.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.dataGridView1.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
+            this.PortColumn,
+            this.RevocationStatusColumn});
+            this.dataGridView1.EditMode = System.Windows.Forms.DataGridViewEditMode.EditOnEnter;
+            this.dataGridView1.Location = new System.Drawing.Point(6, 19);
+            this.dataGridView1.Name = "dataGridView1";
+            this.dataGridView1.Size = new System.Drawing.Size(270, 123);
+            this.dataGridView1.TabIndex = 0;
+            this.dataGridView1.DefaultValuesNeeded += new System.Windows.Forms.DataGridViewRowEventHandler(this.dataGridView1_DefaultValuesNeeded);
             // 
-            // url
+            // PortColumn
             // 
-            this.url.Location = new System.Drawing.Point(14, 19);
-            this.url.Name = "url";
-            this.url.ReadOnly = true;
-            this.url.Size = new System.Drawing.Size(184, 20);
-            this.url.TabIndex = 0;
+            this.PortColumn.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.None;
+            this.PortColumn.HeaderText = "Port";
+            this.PortColumn.Name = "PortColumn";
+            this.PortColumn.ReadOnly = true;
             // 
-            // include
+            // RevocationStatusColumn
             // 
-            this.include.AutoSize = true;
-            this.include.Checked = true;
-            this.include.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.include.Location = new System.Drawing.Point(204, 21);
-            this.include.Name = "include";
-            this.include.Size = new System.Drawing.Size(61, 17);
-            this.include.TabIndex = 1;
-            this.include.Text = "Include";
-            this.include.UseVisualStyleBackColor = true;
-            // 
-            // label5
-            // 
-            this.label5.AutoSize = true;
-            this.label5.Location = new System.Drawing.Point(12, 57);
-            this.label5.Name = "label5";
-            this.label5.Size = new System.Drawing.Size(37, 13);
-            this.label5.TabIndex = 64;
-            this.label5.Text = "Result";
+            this.RevocationStatusColumn.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.None;
+            this.RevocationStatusColumn.DataPropertyName = "Status";
+            this.RevocationStatusColumn.HeaderText = "Status";
+            this.RevocationStatusColumn.Name = "RevocationStatusColumn";
+            this.RevocationStatusColumn.Resizable = System.Windows.Forms.DataGridViewTriState.True;
+            this.RevocationStatusColumn.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.Automatic;
+            this.RevocationStatusColumn.Width = 127;
             // 
             // RevocationEndpoint
             // 
@@ -94,9 +88,9 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.Controls.Add(this.groupBox2);
             this.Name = "RevocationEndpoint";
-            this.Size = new System.Drawing.Size(292, 104);
+            this.Size = new System.Drawing.Size(292, 154);
             this.groupBox2.ResumeLayout(false);
-            this.groupBox2.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).EndInit();
             this.ResumeLayout(false);
 
         }
@@ -104,9 +98,8 @@
         #endregion
 
         private System.Windows.Forms.GroupBox groupBox2;
-        private System.Windows.Forms.ComboBox result;
-        private System.Windows.Forms.TextBox url;
-        private System.Windows.Forms.CheckBox include;
-        private System.Windows.Forms.Label label5;
+        private System.Windows.Forms.DataGridView dataGridView1;
+        private System.Windows.Forms.DataGridViewTextBoxColumn PortColumn;
+        private System.Windows.Forms.DataGridViewComboBoxColumn RevocationStatusColumn;
     }
 }

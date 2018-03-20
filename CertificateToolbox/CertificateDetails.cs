@@ -37,11 +37,11 @@ namespace CertificateToolbox
             subject_alternative_names.ReadOnly = is_ca.Checked;
             key_usages.ReadOnly = is_ca.Checked;
             
-            ocsp.EndpointUrl = string.Format("http://{0}:{1}/ca.ocsp", Environment.MachineName, serialNo.Add(new BigInteger("8080")));
+            ocsp.Add();
             ocsp.GetResponse = GetOcsp;
             ocsp.Start();
 
-            crl.EndpointUrl = string.Format("http://{0}:{1}/ca.crl", Environment.MachineName, serialNo.Add(new BigInteger("8180")));
+            crl.Add();
             crl.GetResponse = GetCrl;
             crl.Start();
         }
@@ -121,8 +121,8 @@ namespace CertificateToolbox
                 Issuer = Issuer?.Generate(),
                 SubjectAlternativeNames = Serialize(subject_alternative_names.Rows),
                 Usages = Serialize(key_usages.Rows),
-                OcspEndpoint = ocsp.EndpointUrl,
-                CrlEndpoint = crl.EndpointUrl
+                //OcspEndpoint = ocsp.EndpointUrl,
+                //CrlEndpoint = crl.EndpointUrl
             };
 
             return generator.Generate();

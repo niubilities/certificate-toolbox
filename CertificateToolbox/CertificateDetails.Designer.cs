@@ -224,23 +224,21 @@
             // crl
             // 
             this.crl.ContentType = "application/pkix-crl";
-            this.crl.EndpointUrl = null;
             this.crl.GetResponse = null;
-            this.crl.Location = new System.Drawing.Point(9, 710);
+            this.crl.Location = new System.Drawing.Point(9, 748);
             this.crl.Name = "crl";
             this.crl.RevocationType = "CRL";
-            this.crl.Size = new System.Drawing.Size(292, 104);
+            this.crl.Size = new System.Drawing.Size(292, 133);
             this.crl.TabIndex = 69;
             // 
             // ocsp
             // 
             this.ocsp.ContentType = "application/ocsp-response";
-            this.ocsp.EndpointUrl = null;
             this.ocsp.GetResponse = null;
             this.ocsp.Location = new System.Drawing.Point(9, 600);
             this.ocsp.Name = "ocsp";
             this.ocsp.RevocationType = "OCSP";
-            this.ocsp.Size = new System.Drawing.Size(292, 104);
+            this.ocsp.Size = new System.Drawing.Size(292, 142);
             this.ocsp.TabIndex = 69;
             // 
             // CertificateDetails
@@ -267,7 +265,7 @@
             this.Controls.Add(this.label10);
             this.Controls.Add(this.serial);
             this.Name = "CertificateDetails";
-            this.Size = new System.Drawing.Size(323, 835);
+            this.Size = new System.Drawing.Size(323, 884);
             ((System.ComponentModel.ISupportInitialize)(this.key_usages)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.subject_alternative_names)).EndInit();
             this.ResumeLayout(false);

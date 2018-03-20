@@ -1,21 +1,16 @@
 ﻿using System;
 using System.IO;
 using System.Net;
+using System.Threading;
 using System.Windows.Forms;
+using Org.BouncyCastle.Math;
 
 namespace CertificateToolbox
 {
     public partial class RevocationEndpoint : UserControl
     {
-        private HttpListener listener;
-        private RevocationStatus status;
+        private HttpListener[] listeners;
 
-        public string EndpointUrl
-        {
-            get { return include.Checked ? url.Text : null; }
-            set { url.Text = value; }
-        }
-        
         public string RevocationType
         {
             get { return groupBox2.Text; }
@@ -29,50 +24,71 @@ namespace CertificateToolbox
         public RevocationEndpoint()
         {
             InitializeComponent();
-            
-            result.DataSource = Enum.GetValues(typeof(RevocationStatus));
+            RevocationStatusColumn.DataSource = Enum.GetValues(typeof(RevocationStatus));
+            RevocationStatusColumn.ValueType = typeof(RevocationStatus);
+        }
+
+        private static int counter = 9090;
+
+        public void Add()
+        {
+            dataGridView1.Rows.Add(++counter, RevocationStatus.Valid);
         }
         
         public void Start()
         {
-            listener = new HttpListener();
-            var uri = new Uri(EndpointUrl);
-            var baseUrl = string.Format("{0}://{1}:{2}/", uri.Scheme, uri.Host, uri.Port);
-            listener.Prefixes.Add(baseUrl);
-            listener.Start();
-            listener.BeginGetContext(ListenerCallback, listener);
+            foreach (DataGridViewRow row in dataGridView1.Rows)
+            {
+                if (row.Cells[0].Value == null)
+                {
+                    continue;
+                }
+                var listener = new HttpListener();
+                var baseUrl = string.Format("http://{0}:{1}/", Environment.MachineName, row.Cells[0].Value);
+                listener.Prefixes.Add(baseUrl);
+                listener.Start();
+                listener.BeginGetContext(ListenerCallback, new MyState
+                {
+                    Listener = listener, Status = (RevocationStatus)row.Cells[1].Value
+                });
+            }
         }
 
         private bool stopRequested;
 
+        public class MyState
+        {
+            public HttpListener Listener { get; set; }
+            public RevocationStatus Status { get; set; }
+        }
+
         public void Stop()
         {
             stopRequested = true;
-            listener.Close();
+            foreach (var listener in listeners)
+            {
+                listener.Close();
+            }
         }
 
         private void ListenerCallback(IAsyncResult asyncResult)
         {
+            MyState state = (MyState) asyncResult.AsyncState;
+            HttpListener listener = state.Listener;
+
             try
             {
                 if (stopRequested) return;
 
                 HttpListenerContext context = listener.EndGetContext(asyncResult);
 
-                if (status == RevocationStatus.Unknown)
-                {
-                    context.Response.StatusCode = 404;
-                }
-                else
-                {
-                    var response = GetResponse(status);
-                    context.Response.ContentType = ContentType;
-                    context.Response.ContentLength64 = response.Length;
-                    context.Response.OutputStream.Write(response, 0, response.Length);
-                    context.Response.OutputStream.Close();
-                }
+                var response = GetResponse(state.Status);
+                context.Response.ContentType = ContentType;
+                context.Response.ContentLength64 = response.Length;
+                context.Response.OutputStream.Write(response, 0, response.Length);
+                context.Response.OutputStream.Close();
 
-                File.AppendAllText("revocation.log", EndpointUrl + Environment.NewLine);
+                File.AppendAllText("revocation.log", Environment.NewLine);
 
                 context.Response.Close();
             }
@@ -89,9 +105,10 @@ namespace CertificateToolbox
             }
         }
 
-        private void result_SelectedIndexChanged(object sender, EventArgs e)
+        private void dataGridView1_DefaultValuesNeeded(object sender, DataGridViewRowEventArgs e)
         {
-            status = (RevocationStatus)result.SelectedItem;
+            e.Row.Cells[0].Value = ++counter;
+            e.Row.Cells[1].Value = RevocationStatus.Valid;
         }
     }
 }
