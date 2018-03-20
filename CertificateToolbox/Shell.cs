@@ -58,5 +58,10 @@ namespace CertificateToolbox
                 ((CertificateDetails)layout.Controls[i]).RemoveExistingCertificate();
             }
         }
+
+        private void clear_cache_Click(object sender, EventArgs e)
+        {
+            CryptNetCache.Clear();
+        }
     }
 }

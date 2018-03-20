@@ -57,6 +57,7 @@
     <Compile Include="CertificateDetails.Designer.cs">
       <DependentUpon>CertificateDetails.cs</DependentUpon>
     </Compile>
+    <Compile Include="CryptNetCache.cs" />
     <Compile Include="Generator.cs" />
     <Compile Include="KeyRepository.cs" />
     <Compile Include="RevocationEndpoint.cs">

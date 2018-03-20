@@ -31,6 +31,7 @@
             this.save = new System.Windows.Forms.Button();
             this.layout = new System.Windows.Forms.FlowLayoutPanel();
             this.button2 = new System.Windows.Forms.Button();
+            this.clear_cache = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // save
@@ -67,11 +68,23 @@
             this.button2.UseVisualStyleBackColor = true;
             this.button2.Click += new System.EventHandler(this.add_Click);
             // 
+            // clear_cache
+            // 
+            this.clear_cache.Anchor = System.Windows.Forms.AnchorStyles.Right;
+            this.clear_cache.Location = new System.Drawing.Point(1163, 345);
+            this.clear_cache.Name = "clear_cache";
+            this.clear_cache.Size = new System.Drawing.Size(73, 63);
+            this.clear_cache.TabIndex = 70;
+            this.clear_cache.Text = "Clear CACHE";
+            this.clear_cache.UseVisualStyleBackColor = true;
+            this.clear_cache.Click += new System.EventHandler(this.clear_cache_Click);
+            // 
             // Shell
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1248, 605);
+            this.Controls.Add(this.clear_cache);
             this.Controls.Add(this.button2);
             this.Controls.Add(this.layout);
             this.Controls.Add(this.save);
@@ -86,6 +99,7 @@
         private System.Windows.Forms.Button save;
         private System.Windows.Forms.FlowLayoutPanel layout;
         private System.Windows.Forms.Button button2;
+        private System.Windows.Forms.Button clear_cache;
     }
 }
 
