@@ -121,8 +121,8 @@ namespace CertificateToolbox
                 Issuer = Issuer?.Generate(),
                 SubjectAlternativeNames = Serialize(subject_alternative_names.Rows),
                 Usages = Serialize(key_usages.Rows),
-                //OcspEndpoint = ocsp.EndpointUrl,
-                //CrlEndpoint = crl.EndpointUrl
+                OcspEndpoints = ocsp.Urls,
+                CrlEndpoints = crl.Urls
             };
 
             return generator.Generate();

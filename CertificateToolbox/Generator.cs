@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Org.BouncyCastle.Asn1;
@@ -26,8 +27,8 @@ namespace CertificateToolbox
         public string[] SubjectAlternativeNames { get; set; }
         public string[] Usages { get; set; }
         public bool IsCertificateAuthority { get; set; }
-        public string OcspEndpoint { get; set; }
-        public string CrlEndpoint { get; set; }
+        public string[] OcspEndpoints { get; set; }
+        public string[] CrlEndpoints { get; set; }
 
         private readonly SecureRandom random;
         private readonly X509V3CertificateGenerator certificateGenerator;
@@ -161,26 +162,34 @@ namespace CertificateToolbox
 
         public void AddOcspPoints()
         {
-            if (!string.IsNullOrEmpty(OcspEndpoint))
+            var accessDescriptions = new List<Asn1Encodable>();
+
+            foreach(var endpoint in OcspEndpoints)
             {
-                GeneralName generalName = new GeneralName(GeneralName.UniformResourceIdentifier, new DerIA5String(OcspEndpoint));
-                var authorityInformationAccess = new AuthorityInformationAccess(new AccessDescription(X509ObjectIdentifiers.OcspAccessMethod, generalName));
-                certificateGenerator.AddExtension(X509Extensions.AuthorityInfoAccess, false, authorityInformationAccess);
+                GeneralName generalName = new GeneralName(GeneralName.UniformResourceIdentifier, new DerIA5String(endpoint));
+                var accessDescription = new AccessDescription(X509ObjectIdentifiers.OcspAccessMethod, generalName);
+                accessDescriptions.Add(accessDescription);
             }
+
+            var seq = new DerSequence(accessDescriptions.ToArray());
+            certificateGenerator.AddExtension(X509Extensions.AuthorityInfoAccess, false, seq);
         }
 
         public void AddCrlDistributionPoints()
         {
-            if (!string.IsNullOrEmpty(CrlEndpoint))
+            var distributionPoints = new List<Asn1Encodable>();
+
+            foreach(var endpoint in CrlEndpoints)
             {
-                var generalName = new GeneralName(GeneralName.UniformResourceIdentifier, new DerIA5String(CrlEndpoint));
+                var generalName = new GeneralName(GeneralName.UniformResourceIdentifier, new DerIA5String(endpoint));
                 var gns = new GeneralNames(generalName);
                 var dpn = new DistributionPointName(gns);
                 var distp = new DistributionPoint(dpn, null, null);
-                var seq = new DerSequence(distp);
-
-                certificateGenerator.AddExtension(X509Extensions.CrlDistributionPoints, false, seq);
+                distributionPoints.Add(distp);
             }
+
+            var seq = new DerSequence(distributionPoints.ToArray());
+            certificateGenerator.AddExtension(X509Extensions.CrlDistributionPoints, false, seq);
         }
 
         private X509Certificate2 ConvertCertificate(X509Certificate certificate)

@@ -1,9 +1,8 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
 using System.Net;
-using System.Threading;
 using System.Windows.Forms;
-using Org.BouncyCastle.Math;
 
 namespace CertificateToolbox
 {
@@ -15,6 +14,11 @@ namespace CertificateToolbox
         {
             get { return groupBox2.Text; }
             set { groupBox2.Text = value; }
+        }
+
+        public string[] Urls
+        {
+            get { return (from DataGridViewRow row in dataGridView1.Rows where row.Cells[0].Value != null select GetUrl(row.Cells[0].Value.ToString())).ToArray(); }
         }
 
         public string ContentType { get; set; }
@@ -44,7 +48,7 @@ namespace CertificateToolbox
                     continue;
                 }
                 var listener = new HttpListener();
-                var baseUrl = string.Format("http://{0}:{1}/", Environment.MachineName, row.Cells[0].Value);
+                var baseUrl = GetUrl(row.Cells[0].Value.ToString());
                 listener.Prefixes.Add(baseUrl);
                 listener.Start();
                 listener.BeginGetContext(ListenerCallback, new MyState
@@ -52,6 +56,11 @@ namespace CertificateToolbox
                     Listener = listener, Status = (RevocationStatus)row.Cells[1].Value
                 });
             }
+        }
+
+        private string GetUrl(string port)
+        {
+            return string.Format("http://{0}:{1}/", Environment.MachineName, port);
         }
 
         private bool stopRequested;
@@ -88,7 +97,7 @@ namespace CertificateToolbox
                 context.Response.OutputStream.Write(response, 0, response.Length);
                 context.Response.OutputStream.Close();
 
-                File.AppendAllText("revocation.log", Environment.NewLine);
+                File.AppendAllText("revocation.log", context.Request.Url + Environment.NewLine);
 
                 context.Response.Close();
             }
