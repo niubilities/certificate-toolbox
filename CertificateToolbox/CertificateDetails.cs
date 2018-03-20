@@ -31,6 +31,9 @@ namespace CertificateToolbox
             store_name.DataSource = Enum.GetValues(typeof(StoreName));
             store_name.SelectedItem = StoreName.Root;
 
+            store_location.DataSource = Enum.GetValues(typeof(StoreLocation));
+            store_location.SelectedItem = StoreLocation.LocalMachine;
+
             not_before.Value = DateTime.UtcNow.AddDays(-1);
             not_after.Value = DateTime.UtcNow.AddYears(100);
 
@@ -90,9 +93,10 @@ namespace CertificateToolbox
         {
             if (string.IsNullOrEmpty(thumbprint.Text)) return;
 
-            foreach(StoreName storeName in Enum.GetValues(typeof(StoreName)))
+            foreach (StoreLocation storeLocation in new [] {StoreLocation.LocalMachine, StoreLocation.CurrentUser})
+            foreach (StoreName storeName in Enum.GetValues(typeof(StoreName)))
             {
-                var store = new X509Store(storeName, StoreLocation.LocalMachine);
+                var store = new X509Store(storeName, storeLocation);
                 store.Open(OpenFlags.ReadWrite | OpenFlags.MaxAllowed);
                 var certificates = store.Certificates.Find(X509FindType.FindByThumbprint, thumbprint.Text, false);
                 if (certificates.Count == 1)
@@ -105,7 +109,7 @@ namespace CertificateToolbox
 
         private void InstallNewCertificate()
         {
-            var store = new X509Store((StoreName)store_name.SelectedItem, StoreLocation.LocalMachine);
+            var store = new X509Store((StoreName)store_name.SelectedItem, (StoreLocation)store_location.SelectedItem);
             store.Open(OpenFlags.ReadWrite);
             store.Add(Certificate);
             store.Close();
