@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Windows.Forms;
 using System.Linq;
+using System.Security.Cryptography.X509Certificates;
 using Org.BouncyCastle.Math;
 
 namespace CertificateToolbox
@@ -62,6 +63,16 @@ namespace CertificateToolbox
         private void clear_cache_Click(object sender, EventArgs e)
         {
             CryptNetCache.Clear();
+        }
+
+        private void export_Click(object sender, EventArgs e)
+        {
+            foreach (CertificateDetails details in layout.Controls)
+            {
+                var pfxBytes = details.Certificate.Export(X509ContentType.Pkcs12);
+                var commonName = details.Certificate.GetNameInfo(X509NameType.SimpleName, false);
+                System.IO.File.WriteAllBytes(".\\" + commonName  + ".pfx", pfxBytes);
+            }
         }
     }
 }

@@ -32,6 +32,7 @@
             this.layout = new System.Windows.Forms.FlowLayoutPanel();
             this.button2 = new System.Windows.Forms.Button();
             this.clear_cache = new System.Windows.Forms.Button();
+            this.export = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // save
@@ -79,11 +80,23 @@
             this.clear_cache.UseVisualStyleBackColor = true;
             this.clear_cache.Click += new System.EventHandler(this.clear_cache_Click);
             // 
+            // export
+            // 
+            this.export.Anchor = System.Windows.Forms.AnchorStyles.Right;
+            this.export.Location = new System.Drawing.Point(1163, 443);
+            this.export.Name = "export";
+            this.export.Size = new System.Drawing.Size(73, 63);
+            this.export.TabIndex = 71;
+            this.export.Text = "Export";
+            this.export.UseVisualStyleBackColor = true;
+            this.export.Click += new System.EventHandler(this.export_Click);
+            // 
             // Shell
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1248, 605);
+            this.Controls.Add(this.export);
             this.Controls.Add(this.clear_cache);
             this.Controls.Add(this.button2);
             this.Controls.Add(this.layout);
@@ -100,6 +113,7 @@
         private System.Windows.Forms.FlowLayoutPanel layout;
         private System.Windows.Forms.Button button2;
         private System.Windows.Forms.Button clear_cache;
+        private System.Windows.Forms.Button export;
     }
 }
 
