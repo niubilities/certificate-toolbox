@@ -19,7 +19,7 @@ namespace CertificateToolbox
 
         public string[] Urls
         {
-            get { return (from DataGridViewRow row in dataGridView1.Rows where row.Cells[0].Value != null select GetUrl(row.Cells[0].Value.ToString())).ToArray(); }
+            get { return (from DataGridViewRow row in dataGridView1.Rows where row.Cells[0].Value != null && !row.IsNewRow select GetUrl(row.Cells[0].Value.ToString())).ToArray(); }
         }
 
         public string ContentType { get; set; }
