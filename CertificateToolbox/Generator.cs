@@ -14,6 +14,7 @@ using Org.BouncyCastle.X509;
 using Org.BouncyCastle.X509.Extension;
 using X509Certificate2 = System.Security.Cryptography.X509Certificates.X509Certificate2;
 using X509KeyStorageFlags = System.Security.Cryptography.X509Certificates.X509KeyStorageFlags;
+using Org.BouncyCastle.Asn1.Ocsp;
 
 namespace CertificateToolbox
 {
@@ -71,6 +72,7 @@ namespace CertificateToolbox
             AddAuthorityKeyIdentifier();
             AddSubjectKeyIdentifier();
             AddBasicConstraints();
+            AddKeyUsage();
             AddExtendedKeyUsage();
             AddSubjectAlternativeNames();
             AddOcspPoints();
@@ -96,34 +98,39 @@ namespace CertificateToolbox
             {
                 generator.AddCrlEntry(SerialNumber, DateTime.Now.AddHours(-12), CrlReason.KeyCompromise);
             }
-
+            
             generator.AddExtension(X509Extensions.AuthorityKeyIdentifier, false, new AuthorityKeyIdentifierStructure(DotNetUtilities.FromX509Certificate(Issuer)));
             generator.AddExtension(X509Extensions.CrlNumber, false, new CrlNumber(new BigInteger(new byte[] { 0x01 })));
             var crl = generator.Generate(DotNetUtilities.GetKeyPair(Issuer.PrivateKey).Private);
 
             return crl.GetEncoded();
         }
-
-        public byte[] GetOcspResponse(RevocationStatus status)
+        
+        public byte[] GetOcspResponse(RevocationStatus status, X509Certificate2 ocspResponder = null)
         {
-            if (status == RevocationStatus.Unknown | Issuer == null) return new byte[0];
+            if (status == RevocationStatus.Unknown) return new byte[0];
 
-            var bouncyCert = DotNetUtilities.FromX509Certificate(Issuer);
+            if (ocspResponder == null) ocspResponder = Issuer;
+
+            if (Issuer == null) return new byte[0];
+
+            var issuerCert = DotNetUtilities.FromX509Certificate(Issuer);
+            var responderCert = DotNetUtilities.FromX509Certificate(ocspResponder);
             var gen = new OCSPRespGenerator();
 
-            var basicGen = new BasicOcspRespGenerator(bouncyCert.GetPublicKey());
+            var basicGen = new BasicOcspRespGenerator(responderCert.GetPublicKey());
 
-            basicGen.AddResponse(new CertificateID(CertificateID.HashSha1, bouncyCert, SerialNumber),
+            basicGen.AddResponse(new CertificateID(CertificateID.HashSha1, issuerCert, SerialNumber),
                 status == RevocationStatus.Revoked
                     ? new RevokedStatus(DateTime.UtcNow, CrlReason.CessationOfOperation)
                     : CertificateStatus.Good);
 
-            var response = basicGen.Generate(basicGen.SignatureAlgNames.Cast<string>().First(), DotNetUtilities.GetKeyPair(Issuer.PrivateKey).Private, new[] { bouncyCert }, DateTime.UtcNow);
+            var response = basicGen.Generate(basicGen.SignatureAlgNames.Cast<string>().First(), DotNetUtilities.GetKeyPair(ocspResponder.PrivateKey).Private, new[] { responderCert }, DateTime.UtcNow);
 
             var actualResponse = gen.Generate(0, response);
             return actualResponse.GetEncoded();
         }
-        
+
         private void AddAuthorityKeyIdentifier()
         {
             var authorityKeyIdentifierExtension = new AuthorityKeyIdentifier(SubjectPublicKeyInfoFactory.CreateSubjectPublicKeyInfo(issuerKeyPair.Public), new GeneralNames(new GeneralName(new X509Name(issuerName))), issuerSerialNumber);
@@ -139,16 +146,33 @@ namespace CertificateToolbox
                 certificateGenerator.AddExtension(X509Extensions.SubjectAlternativeName.Id, false, subjectAlternativeNamesExtension);
             }
         }
-        
+
+        private void AddKeyUsage()
+        {
+            certificateGenerator.AddExtension(X509Extensions.KeyUsage, false, new KeyUsage(KeyUsage.DigitalSignature | KeyUsage.KeyCertSign | KeyUsage.CrlSign | KeyUsage.KeyEncipherment));
+        }
+
         private void AddExtendedKeyUsage()
         {
             if (Usages != null && Usages.Any())
             {
-                var usages = Usages.Select(x => x == "client" ? KeyPurposeID.IdKPClientAuth : KeyPurposeID.IdKPServerAuth);
+                var usages = Usages.Select(x => extendedUsagesMap[x]);
                 certificateGenerator.AddExtension(X509Extensions.ExtendedKeyUsage.Id, false, new ExtendedKeyUsage(usages));
             }
+
+            if (Usages.Contains("ocsp"))
+            {
+                certificateGenerator.AddExtension(OcspObjectIdentifiers.PkixOcspNocheck.Id, false, new byte[0]);
+            }
         }
-        
+
+        private readonly Dictionary<string, KeyPurposeID> extendedUsagesMap = new Dictionary<string, KeyPurposeID>
+        {
+            {"client", KeyPurposeID.IdKPClientAuth},
+            {"server", KeyPurposeID.IdKPClientAuth},
+            {"ocsp", KeyPurposeID.IdKPOcspSigning}
+        };
+
         private void AddBasicConstraints()
         {
             certificateGenerator.AddExtension(X509Extensions.BasicConstraints.Id, true, new BasicConstraints(IsCertificateAuthority));

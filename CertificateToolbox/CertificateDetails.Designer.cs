@@ -50,6 +50,7 @@
             this.crl = new CertificateToolbox.RevocationEndpoint();
             this.ocsp = new CertificateToolbox.RevocationEndpoint();
             this.store_location = new System.Windows.Forms.ComboBox();
+            this.has_ocsp_responder = new System.Windows.Forms.CheckBox();
             ((System.ComponentModel.ISupportInitialize)(this.key_usages)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.subject_alternative_names)).BeginInit();
             this.SuspendLayout();
@@ -251,10 +252,21 @@
             this.store_location.Size = new System.Drawing.Size(121, 21);
             this.store_location.TabIndex = 70;
             // 
+            // has_ocsp_responder
+            // 
+            this.has_ocsp_responder.AutoSize = true;
+            this.has_ocsp_responder.Location = new System.Drawing.Point(156, 320);
+            this.has_ocsp_responder.Name = "has_ocsp_responder";
+            this.has_ocsp_responder.Size = new System.Drawing.Size(127, 17);
+            this.has_ocsp_responder.TabIndex = 71;
+            this.has_ocsp_responder.Text = "Has OCSP responder";
+            this.has_ocsp_responder.UseVisualStyleBackColor = true;
+            // 
             // CertificateDetails
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.Controls.Add(this.has_ocsp_responder);
             this.Controls.Add(this.store_location);
             this.Controls.Add(this.crl);
             this.Controls.Add(this.ocsp);
@@ -308,5 +320,6 @@
         private RevocationEndpoint ocsp;
         private RevocationEndpoint crl;
         private System.Windows.Forms.ComboBox store_location;
+        private System.Windows.Forms.CheckBox has_ocsp_responder;
     }
 }

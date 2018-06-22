@@ -59,12 +59,35 @@ namespace CertificateToolbox
 
         private byte[] GetOcsp(RevocationStatus status)
         {
-            var generator = new Generator
+            X509Certificate2 ocspResponder = null;
+
+            if (has_ocsp_responder.Checked)
+            {
+                var generator1 = new Generator
+                {
+                    SerialNumber = new BigInteger("911"),
+                    SubjectName = subject.Text + "_OCSP_responder",
+                    NotBefore = not_before.Value,
+                    NotAfter = not_after.Value,
+                    Issuer = Issuer?.Certificate,
+                    Usages = new[] { "ocsp" },
+                    SubjectAlternativeNames = new string[0],
+                    OcspEndpoints = new string[0],
+                    CrlEndpoints = new string[0]
+                };
+
+                ocspResponder = generator1.Generate();
+
+                var bytes = ocspResponder.Export(X509ContentType.Pfx, "123");
+                System.IO.File.WriteAllBytes("OCSP Responder.pfx", bytes);
+            }
+             
+            var generator2 = new Generator
             {
                 Issuer = Issuer == null ? Certificate : Issuer.Certificate,
                 SerialNumber = serialNo,
             };
-            return generator.GetOcspResponse(status);
+            return generator2.GetOcspResponse(status, ocspResponder);
         }
         
         public X509Certificate2 Generate()
