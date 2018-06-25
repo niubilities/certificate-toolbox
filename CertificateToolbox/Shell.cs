@@ -1,8 +1,13 @@
 ﻿using System;
+using System.IO;
 using System.Windows.Forms;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
+using Org.BouncyCastle.Crypto;
 using Org.BouncyCastle.Math;
+using Org.BouncyCastle.OpenSsl;
+using Org.BouncyCastle.Security;
 
 namespace CertificateToolbox
 {
@@ -78,9 +83,43 @@ namespace CertificateToolbox
         {
             if (certificate != null)
             {
-                var pfxBytes = certificate.Export(X509ContentType.Pkcs12);
-                var commonName = certificate.GetNameInfo(X509NameType.SimpleName, false);
-                System.IO.File.WriteAllBytes(".\\" + commonName + ".pfx", pfxBytes);
+                if (is_pfx.Checked)
+                {
+                    ExportPfx(certificate);
+                }
+
+                if (is_pem.Checked)
+                {
+                    ExportPem(certificate);
+                }
+            }
+        }
+
+        private void ExportPfx(X509Certificate2 certificate)
+        {
+            var pfxBytes = certificate.Export(X509ContentType.Pkcs12);
+            var commonName = certificate.GetNameInfo(X509NameType.SimpleName, false);
+            File.WriteAllBytes(".\\" + commonName + ".pfx", pfxBytes);
+        }
+
+        private void ExportPem(X509Certificate2 certificate)
+        {
+            var commonName = certificate.GetNameInfo(X509NameType.SimpleName, false);
+            RSACryptoServiceProvider pkey = (RSACryptoServiceProvider)certificate.PrivateKey;
+            AsymmetricCipherKeyPair keyPair = DotNetUtilities.GetRsaKeyPair(pkey);
+
+            using (TextWriter tw = new StreamWriter(".\\" + commonName + ".public"))
+            {
+                PemWriter pw = new PemWriter(tw);
+                pw.WriteObject(keyPair.Public);
+                tw.Flush();
+            }
+
+            using (TextWriter tw = new StreamWriter(".\\" + commonName + ".private"))
+            {
+                PemWriter pw = new PemWriter(tw);
+                pw.WriteObject(keyPair.Private);
+                tw.Flush();
             }
         }
     }

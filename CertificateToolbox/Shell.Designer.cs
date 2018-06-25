@@ -33,6 +33,8 @@
             this.button2 = new System.Windows.Forms.Button();
             this.clear_cache = new System.Windows.Forms.Button();
             this.export = new System.Windows.Forms.Button();
+            this.is_pfx = new System.Windows.Forms.RadioButton();
+            this.is_pem = new System.Windows.Forms.RadioButton();
             this.SuspendLayout();
             // 
             // save
@@ -91,11 +93,35 @@
             this.export.UseVisualStyleBackColor = true;
             this.export.Click += new System.EventHandler(this.export_Click);
             // 
+            // is_pfx
+            // 
+            this.is_pfx.AutoSize = true;
+            this.is_pfx.Checked = true;
+            this.is_pfx.Location = new System.Drawing.Point(1161, 538);
+            this.is_pfx.Name = "is_pfx";
+            this.is_pfx.Size = new System.Drawing.Size(45, 17);
+            this.is_pfx.TabIndex = 73;
+            this.is_pfx.TabStop = true;
+            this.is_pfx.Text = "PFX";
+            this.is_pfx.UseVisualStyleBackColor = true;
+            // 
+            // is_pem
+            // 
+            this.is_pem.AutoSize = true;
+            this.is_pem.Location = new System.Drawing.Point(1161, 561);
+            this.is_pem.Name = "is_pem";
+            this.is_pem.Size = new System.Drawing.Size(48, 17);
+            this.is_pem.TabIndex = 73;
+            this.is_pem.Text = "PEM";
+            this.is_pem.UseVisualStyleBackColor = true;
+            // 
             // Shell
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1248, 605);
+            this.Controls.Add(this.is_pem);
+            this.Controls.Add(this.is_pfx);
             this.Controls.Add(this.export);
             this.Controls.Add(this.clear_cache);
             this.Controls.Add(this.button2);
@@ -105,6 +131,7 @@
             this.Text = "Certificate Toolbox";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Shell_FormClosing);
             this.ResumeLayout(false);
+            this.PerformLayout();
 
         }
 
@@ -114,6 +141,8 @@
         private System.Windows.Forms.Button button2;
         private System.Windows.Forms.Button clear_cache;
         private System.Windows.Forms.Button export;
+        private System.Windows.Forms.RadioButton is_pfx;
+        private System.Windows.Forms.RadioButton is_pem;
     }
 }
 
