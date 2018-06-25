@@ -2,12 +2,9 @@
 using System.IO;
 using System.Windows.Forms;
 using System.Linq;
-using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
-using Org.BouncyCastle.Crypto;
+using System.Text;
 using Org.BouncyCastle.Math;
-using Org.BouncyCastle.OpenSsl;
-using Org.BouncyCastle.Security;
 
 namespace CertificateToolbox
 {
@@ -97,30 +94,19 @@ namespace CertificateToolbox
 
         private void ExportPfx(X509Certificate2 certificate)
         {
-            var pfxBytes = certificate.Export(X509ContentType.Pkcs12);
+            var pfxBytes = certificate.Export(X509ContentType.Pfx);
             var commonName = certificate.GetNameInfo(X509NameType.SimpleName, false);
             File.WriteAllBytes(".\\" + commonName + ".pfx", pfxBytes);
         }
 
         private void ExportPem(X509Certificate2 certificate)
         {
+            StringBuilder builder = new StringBuilder();
+            builder.AppendLine("-----BEGIN CERTIFICATE-----");
+            builder.AppendLine(Convert.ToBase64String(certificate.Export(X509ContentType.Cert), Base64FormattingOptions.InsertLineBreaks));
+            builder.AppendLine("-----END CERTIFICATE-----");
             var commonName = certificate.GetNameInfo(X509NameType.SimpleName, false);
-            RSACryptoServiceProvider pkey = (RSACryptoServiceProvider)certificate.PrivateKey;
-            AsymmetricCipherKeyPair keyPair = DotNetUtilities.GetRsaKeyPair(pkey);
-
-            using (TextWriter tw = new StreamWriter(".\\" + commonName + ".public"))
-            {
-                PemWriter pw = new PemWriter(tw);
-                pw.WriteObject(keyPair.Public);
-                tw.Flush();
-            }
-
-            using (TextWriter tw = new StreamWriter(".\\" + commonName + ".private"))
-            {
-                PemWriter pw = new PemWriter(tw);
-                pw.WriteObject(keyPair.Private);
-                tw.Flush();
-            }
+            File.WriteAllText(".\\" + commonName + ".pem", builder.ToString());
         }
     }
 }
