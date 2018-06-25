@@ -87,7 +87,7 @@ namespace CertificateToolbox
                 Issuer = Issuer == null ? Certificate : Issuer.Certificate,
                 SerialNumber = serialNo,
             };
-            return generator2.GetOcspResponse(status, ocspResponder);
+            return generator2.GetOcspResponse(status, ocspResponder, include_ocsp_cert.Checked);
         }
         
         public X509Certificate2 Generate()

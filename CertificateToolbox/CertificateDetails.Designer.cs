@@ -51,6 +51,7 @@
             this.ocsp = new CertificateToolbox.RevocationEndpoint();
             this.store_location = new System.Windows.Forms.ComboBox();
             this.has_ocsp_responder = new System.Windows.Forms.CheckBox();
+            this.include_ocsp_cert = new System.Windows.Forms.CheckBox();
             ((System.ComponentModel.ISupportInitialize)(this.key_usages)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.subject_alternative_names)).BeginInit();
             this.SuspendLayout();
@@ -255,17 +256,28 @@
             // has_ocsp_responder
             // 
             this.has_ocsp_responder.AutoSize = true;
-            this.has_ocsp_responder.Location = new System.Drawing.Point(156, 320);
+            this.has_ocsp_responder.Location = new System.Drawing.Point(157, 296);
             this.has_ocsp_responder.Name = "has_ocsp_responder";
             this.has_ocsp_responder.Size = new System.Drawing.Size(127, 17);
             this.has_ocsp_responder.TabIndex = 71;
             this.has_ocsp_responder.Text = "Has OCSP responder";
             this.has_ocsp_responder.UseVisualStyleBackColor = true;
             // 
+            // include_ocsp_cert
+            // 
+            this.include_ocsp_cert.AutoSize = true;
+            this.include_ocsp_cert.Location = new System.Drawing.Point(157, 320);
+            this.include_ocsp_cert.Name = "include_ocsp_cert";
+            this.include_ocsp_cert.Size = new System.Drawing.Size(139, 17);
+            this.include_ocsp_cert.TabIndex = 72;
+            this.include_ocsp_cert.Text = "Include cert in response";
+            this.include_ocsp_cert.UseVisualStyleBackColor = true;
+            // 
             // CertificateDetails
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.Controls.Add(this.include_ocsp_cert);
             this.Controls.Add(this.has_ocsp_responder);
             this.Controls.Add(this.store_location);
             this.Controls.Add(this.crl);
@@ -321,5 +333,6 @@
         private RevocationEndpoint crl;
         private System.Windows.Forms.ComboBox store_location;
         private System.Windows.Forms.CheckBox has_ocsp_responder;
+        private System.Windows.Forms.CheckBox include_ocsp_cert;
     }
 }

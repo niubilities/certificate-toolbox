@@ -106,7 +106,7 @@ namespace CertificateToolbox
             return crl.GetEncoded();
         }
         
-        public byte[] GetOcspResponse(RevocationStatus status, X509Certificate2 ocspResponder = null)
+        public byte[] GetOcspResponse(RevocationStatus status, X509Certificate2 ocspResponder = null, bool includeResponderCertificateInResponse = true)
         {
             if (status == RevocationStatus.Unknown) return new byte[0];
 
@@ -125,7 +125,8 @@ namespace CertificateToolbox
                     ? new RevokedStatus(DateTime.UtcNow, CrlReason.CessationOfOperation)
                     : CertificateStatus.Good);
 
-            var response = basicGen.Generate(basicGen.SignatureAlgNames.Cast<string>().First(), DotNetUtilities.GetKeyPair(ocspResponder.PrivateKey).Private, new[] { responderCert }, DateTime.UtcNow);
+            var certificates = includeResponderCertificateInResponse ? new[] {responderCert} : new X509Certificate[0];
+            var response = basicGen.Generate(basicGen.SignatureAlgNames.Cast<string>().First(), DotNetUtilities.GetKeyPair(ocspResponder.PrivateKey).Private, certificates, DateTime.UtcNow);
 
             var actualResponse = gen.Generate(0, response);
             return actualResponse.GetEncoded();
