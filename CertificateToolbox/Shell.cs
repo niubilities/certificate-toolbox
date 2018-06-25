@@ -69,9 +69,18 @@ namespace CertificateToolbox
         {
             foreach (CertificateDetails details in layout.Controls)
             {
-                var pfxBytes = details.Certificate.Export(X509ContentType.Pkcs12);
-                var commonName = details.Certificate.GetNameInfo(X509NameType.SimpleName, false);
-                System.IO.File.WriteAllBytes(".\\" + commonName  + ".pfx", pfxBytes);
+                Export(details.Certificate);
+                Export(details.OcspResponder);
+            }
+        }
+
+        private void Export(X509Certificate2 certificate)
+        {
+            if (certificate != null)
+            {
+                var pfxBytes = certificate.Export(X509ContentType.Pkcs12);
+                var commonName = certificate.GetNameInfo(X509NameType.SimpleName, false);
+                System.IO.File.WriteAllBytes(".\\" + commonName + ".pfx", pfxBytes);
             }
         }
     }
