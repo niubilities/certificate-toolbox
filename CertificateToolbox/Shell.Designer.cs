@@ -62,7 +62,7 @@
             // 
             // button2
             // 
-            this.button2.Anchor = System.Windows.Forms.AnchorStyles.Right;
+            this.button2.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.button2.Location = new System.Drawing.Point(1163, 238);
             this.button2.Name = "button2";
             this.button2.Size = new System.Drawing.Size(73, 65);
@@ -73,7 +73,7 @@
             // 
             // clear_cache
             // 
-            this.clear_cache.Anchor = System.Windows.Forms.AnchorStyles.Right;
+            this.clear_cache.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.clear_cache.Location = new System.Drawing.Point(1163, 345);
             this.clear_cache.Name = "clear_cache";
             this.clear_cache.Size = new System.Drawing.Size(73, 63);
@@ -84,7 +84,7 @@
             // 
             // export
             // 
-            this.export.Anchor = System.Windows.Forms.AnchorStyles.Right;
+            this.export.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.export.Location = new System.Drawing.Point(1163, 443);
             this.export.Name = "export";
             this.export.Size = new System.Drawing.Size(73, 63);
@@ -95,6 +95,7 @@
             // 
             // is_pfx
             // 
+            this.is_pfx.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.is_pfx.AutoSize = true;
             this.is_pfx.Checked = true;
             this.is_pfx.Location = new System.Drawing.Point(1161, 538);
@@ -107,6 +108,7 @@
             // 
             // is_pem
             // 
+            this.is_pem.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.is_pem.AutoSize = true;
             this.is_pem.Location = new System.Drawing.Point(1161, 561);
             this.is_pem.Name = "is_pem";
