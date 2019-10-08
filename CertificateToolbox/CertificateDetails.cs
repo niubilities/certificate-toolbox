@@ -130,7 +130,7 @@ namespace CertificateToolbox
                 NotBefore = not_before.Value,
                 NotAfter = not_after.Value,
                 IsCertificateAuthority = is_ca.Checked,
-                Issuer = Issuer?.Generate(),
+                Issuer = GetIssuer(),
                 SubjectAlternativeNames = Serialize(subject_alternative_names.Rows),
                 Usages = Serialize(key_usages.Rows),
                 OcspEndpoints = ocsp.Urls,
@@ -138,6 +138,19 @@ namespace CertificateToolbox
             };
 
             Certificate = generator.Generate();
+        }
+
+        private X509Certificate2 GetIssuer()
+        {
+            if (Issuer == null)
+            {
+                return null;
+            }
+            if (Issuer.is_recreate_required.Checked)
+            {
+                return Issuer.Generate();
+            }
+            return Issuer.Certificate;
         }
 
         private void GenerateOcspResponder()

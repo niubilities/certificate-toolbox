@@ -47,11 +47,12 @@
             this.thumbprint = new System.Windows.Forms.TextBox();
             this.remove = new System.Windows.Forms.Button();
             this.copy = new System.Windows.Forms.Button();
-            this.crl = new CertificateToolbox.RevocationEndpoint();
-            this.ocsp = new CertificateToolbox.RevocationEndpoint();
             this.store_location = new System.Windows.Forms.ComboBox();
             this.has_ocsp_responder = new System.Windows.Forms.CheckBox();
             this.include_ocsp_cert = new System.Windows.Forms.CheckBox();
+            this.is_recreate_required = new System.Windows.Forms.CheckBox();
+            this.crl = new CertificateToolbox.RevocationEndpoint();
+            this.ocsp = new CertificateToolbox.RevocationEndpoint();
             ((System.ComponentModel.ISupportInitialize)(this.key_usages)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.subject_alternative_names)).BeginInit();
             this.SuspendLayout();
@@ -224,26 +225,6 @@
             this.copy.UseVisualStyleBackColor = true;
             this.copy.Click += new System.EventHandler(this.copy_Click);
             // 
-            // crl
-            // 
-            this.crl.ContentType = "application/pkix-crl";
-            this.crl.GetResponse = null;
-            this.crl.Location = new System.Drawing.Point(9, 762);
-            this.crl.Name = "crl";
-            this.crl.RevocationType = "CRL";
-            this.crl.Size = new System.Drawing.Size(292, 133);
-            this.crl.TabIndex = 69;
-            // 
-            // ocsp
-            // 
-            this.ocsp.ContentType = "application/ocsp-response";
-            this.ocsp.GetResponse = null;
-            this.ocsp.Location = new System.Drawing.Point(9, 614);
-            this.ocsp.Name = "ocsp";
-            this.ocsp.RevocationType = "OCSP";
-            this.ocsp.Size = new System.Drawing.Size(292, 142);
-            this.ocsp.TabIndex = 69;
-            // 
             // store_location
             // 
             this.store_location.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
@@ -273,10 +254,43 @@
             this.include_ocsp_cert.Text = "Include cert in response";
             this.include_ocsp_cert.UseVisualStyleBackColor = true;
             // 
+            // is_recreate_required
+            // 
+            this.is_recreate_required.AutoSize = true;
+            this.is_recreate_required.Checked = true;
+            this.is_recreate_required.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.is_recreate_required.Location = new System.Drawing.Point(250, 148);
+            this.is_recreate_required.Name = "is_recreate_required";
+            this.is_recreate_required.Size = new System.Drawing.Size(70, 17);
+            this.is_recreate_required.TabIndex = 74;
+            this.is_recreate_required.Text = "Recreate";
+            this.is_recreate_required.UseVisualStyleBackColor = true;
+            // 
+            // crl
+            // 
+            this.crl.ContentType = "application/pkix-crl";
+            this.crl.GetResponse = null;
+            this.crl.Location = new System.Drawing.Point(9, 762);
+            this.crl.Name = "crl";
+            this.crl.RevocationType = "CRL";
+            this.crl.Size = new System.Drawing.Size(292, 133);
+            this.crl.TabIndex = 69;
+            // 
+            // ocsp
+            // 
+            this.ocsp.ContentType = "application/ocsp-response";
+            this.ocsp.GetResponse = null;
+            this.ocsp.Location = new System.Drawing.Point(9, 614);
+            this.ocsp.Name = "ocsp";
+            this.ocsp.RevocationType = "OCSP";
+            this.ocsp.Size = new System.Drawing.Size(292, 142);
+            this.ocsp.TabIndex = 69;
+            // 
             // CertificateDetails
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.Controls.Add(this.is_recreate_required);
             this.Controls.Add(this.include_ocsp_cert);
             this.Controls.Add(this.has_ocsp_responder);
             this.Controls.Add(this.store_location);
@@ -334,5 +348,6 @@
         private System.Windows.Forms.ComboBox store_location;
         private System.Windows.Forms.CheckBox has_ocsp_responder;
         private System.Windows.Forms.CheckBox include_ocsp_cert;
+        private System.Windows.Forms.CheckBox is_recreate_required;
     }
 }
