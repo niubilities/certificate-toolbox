@@ -65,7 +65,7 @@ namespace CertificateToolbox
 
         private string GetUrl(string port)
         {
-            return string.Format("http://{0}:{1}/", Environment.MachineName, port);
+            return $@"http://{Environment.MachineName}:{port}/";
         }
 
         private bool stopRequested;

@@ -167,7 +167,7 @@ namespace CertificateToolbox
             }
         }
 
-        private readonly Dictionary<string, KeyPurposeID> extendedUsagesMap = new Dictionary<string, KeyPurposeID>
+        private readonly Dictionary<string, KeyPurposeID> extendedUsagesMap = new()
         {
             {"client", KeyPurposeID.IdKPClientAuth},
             {"server", KeyPurposeID.IdKPServerAuth},

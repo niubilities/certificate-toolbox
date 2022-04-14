@@ -27,7 +27,7 @@ namespace CertificateToolbox
 
             serialNo = serialNumber;
             serial.Text = serialNumber.ToString();
-            subject.Text = string.Format("CN={0} {1}", Environment.MachineName, serialNumber);
+            subject.Text = $@"CN={Environment.MachineName} {serialNumber}";
 
             store_name.DataSource = Enum.GetValues(typeof(StoreName));
             store_name.SelectedItem = StoreName.Root;
@@ -171,7 +171,7 @@ namespace CertificateToolbox
             OcspResponder = generator.Generate();
         }
 
-        private string[] Serialize(DataGridViewRowCollection rows)
+        private string?[] Serialize(DataGridViewRowCollection rows)
         {
             return (from DataGridViewRow row in rows where row.Cells[0].Value != null select row.Cells[0].Value.ToString()).ToArray();
         }
