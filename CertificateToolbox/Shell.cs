@@ -17,7 +17,7 @@ namespace CertificateToolbox
             InitializeComponent();
         }
         
-        public CertificateDetails LastCert
+        public CertificateDetails? LastCert
         {
             get { return layout.Controls.Cast<CertificateDetails>().LastOrDefault(); }
         }
@@ -48,10 +48,11 @@ namespace CertificateToolbox
                 ((CertificateDetails)layout.Controls[i]).Issuer = (CertificateDetails)layout.Controls[i - 1];
             }
 
-            if (layout.Controls.Count > 0)
+            ((CertificateDetails)layout.Controls[0]).Issuer = layout.Controls.Count switch
             {
-                ((CertificateDetails)layout.Controls[0]).Issuer = null;
-            }
+                > 0 => null,
+                _ => ((CertificateDetails)layout.Controls[0]).Issuer
+            };
         }
 
         private void Shell_FormClosing(object sender, FormClosingEventArgs e)
@@ -76,7 +77,7 @@ namespace CertificateToolbox
             }
         }
 
-        private void Export(X509Certificate2 certificate)
+        private void Export(X509Certificate2? certificate)
         {
             if (certificate != null)
             {
@@ -92,14 +93,14 @@ namespace CertificateToolbox
             }
         }
 
-        private void ExportPfx(X509Certificate2 certificate)
+        private void ExportPfx(X509Certificate2? certificate)
         {
             var pfxBytes = certificate.Export(X509ContentType.Pfx);
             var commonName = certificate.GetNameInfo(X509NameType.SimpleName, false);
             File.WriteAllBytes(".\\" + commonName + ".pfx", pfxBytes);
         }
 
-        private void ExportPem(X509Certificate2 certificate)
+        private void ExportPem(X509Certificate2? certificate)
         {
             StringBuilder builder = new StringBuilder();
             builder.AppendLine("-----BEGIN CERTIFICATE-----");
