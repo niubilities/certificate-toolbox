@@ -18,15 +18,17 @@ using Org.BouncyCastle.Asn1.Ocsp;
 
 namespace CertificateToolbox
 {
+    using Org.BouncyCastle.Crypto.Operators;
+
     public class Generator
     {
         public BigInteger SerialNumber { get; set; }
         public string SubjectName { get; set; }
         public DateTime NotBefore { get; set; }
         public DateTime NotAfter { get; set; }
-        public X509Certificate2 Issuer { get; set; }
-        public string[] SubjectAlternativeNames { get; set; }
-        public string[] Usages { get; set; }
+        public X509Certificate2? Issuer { get; set; }
+        public string?[] SubjectAlternativeNames { get; set; }
+        public string?[] Usages { get; set; }
         public bool IsCertificateAuthority { get; set; }
         public string[] OcspEndpoints { get; set; }
         public string[] CrlEndpoints { get; set; }
@@ -38,32 +40,32 @@ namespace CertificateToolbox
         private BigInteger issuerSerialNumber;
         private AsymmetricCipherKeyPair issuerKeyPair;
         private AsymmetricCipherKeyPair subjectKeyPair;
-        
+
         public Generator()
         {
             random = new SecureRandom(new CryptoApiRandomGenerator());
             certificateGenerator = new X509V3CertificateGenerator();
         }
 
-        public X509Certificate2 Generate()
+        public X509Certificate2? Generate()
         {
             subjectKeyPair = KeyRepository.Next();
-            
+
             if (Issuer == null)
             {
                 issuerKeyPair = subjectKeyPair;
                 issuerName = SubjectName;
-                issuerSerialNumber = SerialNumber; 
+                issuerSerialNumber = SerialNumber;
             }
             else
             {
                 issuerName = Issuer.Subject;
-                issuerKeyPair = DotNetUtilities.GetKeyPair(Issuer.PrivateKey);
+
+                issuerKeyPair = DotNetUtilities.GetKeyPair(Issuer.GetECDiffieHellmanPrivateKey());
                 issuerSerialNumber = new BigInteger(Issuer.GetSerialNumber());
             }
-            
-            certificateGenerator.SetSerialNumber(SerialNumber);
-            certificateGenerator.SetSignatureAlgorithm("SHA256WithRSA");
+
+            certificateGenerator.SetSerialNumber(SerialNumber); 
             certificateGenerator.SetIssuerDN(new X509Name(issuerName));
             certificateGenerator.SetSubjectDN(new X509Name(SubjectName));
             certificateGenerator.SetNotBefore(NotBefore);
@@ -77,42 +79,45 @@ namespace CertificateToolbox
             AddSubjectAlternativeNames();
             AddOcspPoints();
             AddCrlDistributionPoints();
-
-            var certificate = certificateGenerator.Generate(issuerKeyPair.Private);
+            ISignatureFactory factory = new Asn1SignatureFactory("SHA256WithRSA", subjectKeyPair.Private);
+            var certificate = certificateGenerator.Generate(factory);
 
             return ConvertCertificate(certificate);
         }
 
         public byte[] GetCrl(RevocationStatus status)
         {
-            if (status == RevocationStatus.Unknown | Issuer == null) return new byte[0];
+            if (status == RevocationStatus.Unknown | Issuer == null) return Array.Empty<byte>();
 
             var generator = new X509V2CrlGenerator();
 
-            generator.SetIssuerDN(new X509Name(Issuer.SubjectName.Name));
+            generator.SetIssuerDN(new X509Name(Issuer?.SubjectName.Name));
             generator.SetThisUpdate(DateTime.Now.AddDays(-1));
-            generator.SetNextUpdate(DateTime.Now.AddDays(1));
-            generator.SetSignatureAlgorithm("SHA256WithRSA");
+            generator.SetNextUpdate(DateTime.Now.AddDays(1)); 
 
             if (status == RevocationStatus.Revoked)
             {
                 generator.AddCrlEntry(SerialNumber, DateTime.Now.AddHours(-12), CrlReason.KeyCompromise);
             }
-            
+
             generator.AddExtension(X509Extensions.AuthorityKeyIdentifier, false, new AuthorityKeyIdentifierStructure(DotNetUtilities.FromX509Certificate(Issuer)));
             generator.AddExtension(X509Extensions.CrlNumber, false, new CrlNumber(new BigInteger(new byte[] { 0x01 })));
-            var crl = generator.Generate(DotNetUtilities.GetKeyPair(Issuer.PrivateKey).Private);
-
+            //var crl = generator.Generate(DotNetUtilities.GetKeyPair(Issuer.PrivateKey).Private);
+            ISignatureFactory factory = new Asn1SignatureFactory("SHA256WithRSA", DotNetUtilities.GetKeyPair(Issuer?.GetECDiffieHellmanPrivateKey()).Private);
+             
+            var crl = generator.Generate(factory);
             return crl.GetEncoded();
         }
-        
-        public byte[] GetOcspResponse(RevocationStatus status, X509Certificate2 ocspResponder = null, bool includeResponderCertificateInResponse = true)
+
+        public byte[] GetOcspResponse(RevocationStatus status, X509Certificate2? ocspResponder = null, bool includeResponderCertificateInResponse = true)
         {
-            if (status == RevocationStatus.Unknown) return new byte[0];
+            if (status == RevocationStatus.Unknown) return Array.Empty<byte>();
 
-            if (ocspResponder == null) ocspResponder = Issuer;
-
-            if (Issuer == null) return new byte[0];
+            ocspResponder = ocspResponder switch
+            {
+                null => Issuer,
+                _ => ocspResponder
+            };
 
             var issuerCert = DotNetUtilities.FromX509Certificate(Issuer);
             var responderCert = DotNetUtilities.FromX509Certificate(ocspResponder);
@@ -125,8 +130,8 @@ namespace CertificateToolbox
                     ? new RevokedStatus(DateTime.UtcNow, CrlReason.CessationOfOperation)
                     : CertificateStatus.Good);
 
-            var certificates = includeResponderCertificateInResponse ? new[] {responderCert} : new X509Certificate[0];
-            var response = basicGen.Generate(basicGen.SignatureAlgNames.Cast<string>().First(), DotNetUtilities.GetKeyPair(ocspResponder.PrivateKey).Private, certificates, DateTime.UtcNow);
+            var certificates = includeResponderCertificateInResponse ? new[] { responderCert } : Array.Empty<X509Certificate>();
+            var response = basicGen.Generate(basicGen.SignatureAlgNames.Cast<string>().First(), DotNetUtilities.GetKeyPair(ocspResponder?.GetECDiffieHellmanPrivateKey()).Private, certificates, DateTime.UtcNow);
 
             var actualResponse = gen.Generate(0, response);
             return actualResponse.GetEncoded();
@@ -137,7 +142,7 @@ namespace CertificateToolbox
             var authorityKeyIdentifierExtension = new AuthorityKeyIdentifier(SubjectPublicKeyInfoFactory.CreateSubjectPublicKeyInfo(issuerKeyPair.Public), new GeneralNames(new GeneralName(new X509Name(issuerName))), issuerSerialNumber);
             certificateGenerator.AddExtension(X509Extensions.AuthorityKeyIdentifier.Id, false, authorityKeyIdentifierExtension);
         }
-        
+
         private void AddSubjectAlternativeNames()
         {
             // Note that you have to repeat the value from the "Subject Name" property.
@@ -155,30 +160,30 @@ namespace CertificateToolbox
 
         private void AddExtendedKeyUsage()
         {
-            if (Usages != null && Usages.Any())
+            if (Usages.Any())
             {
-                var usages = Usages.Select(x => extendedUsagesMap[x]);
+                var usages = Usages.Select(x => _extendedUsagesMap[x]);
                 certificateGenerator.AddExtension(X509Extensions.ExtendedKeyUsage.Id, false, new ExtendedKeyUsage(usages));
             }
 
             if (Usages.Contains("ocsp"))
             {
-                certificateGenerator.AddExtension(OcspObjectIdentifiers.PkixOcspNocheck.Id, false, new byte[0]);
+                certificateGenerator.AddExtension(OcspObjectIdentifiers.PkixOcspNocheck.Id, false, Array.Empty<byte>());
             }
         }
 
-        private readonly Dictionary<string, KeyPurposeID> extendedUsagesMap = new Dictionary<string, KeyPurposeID>
+        private readonly Dictionary<string?, KeyPurposeID> _extendedUsagesMap = new()
         {
-            {"client", KeyPurposeID.IdKPClientAuth},
-            {"server", KeyPurposeID.IdKPServerAuth},
-            {"ocsp", KeyPurposeID.IdKPOcspSigning}
+            { "client", KeyPurposeID.IdKPClientAuth },
+            { "server", KeyPurposeID.IdKPServerAuth },
+            { "ocsp", KeyPurposeID.IdKPOcspSigning }
         };
 
         private void AddBasicConstraints()
         {
             certificateGenerator.AddExtension(X509Extensions.BasicConstraints.Id, true, new BasicConstraints(IsCertificateAuthority));
         }
-        
+
         private void AddSubjectKeyIdentifier()
         {
             var subjectKeyIdentifierExtension = new SubjectKeyIdentifier(SubjectPublicKeyInfoFactory.CreateSubjectPublicKeyInfo(subjectKeyPair.Public));
@@ -189,7 +194,7 @@ namespace CertificateToolbox
         {
             var accessDescriptions = new List<Asn1Encodable>();
 
-            foreach(var endpoint in OcspEndpoints)
+            foreach (var endpoint in OcspEndpoints)
             {
                 GeneralName generalName = new GeneralName(GeneralName.UniformResourceIdentifier, new DerIA5String(endpoint));
                 var accessDescription = new AccessDescription(X509ObjectIdentifiers.OcspAccessMethod, generalName);
@@ -204,7 +209,7 @@ namespace CertificateToolbox
         {
             var distributionPoints = new List<Asn1Encodable>();
 
-            foreach(var endpoint in CrlEndpoints)
+            foreach (var endpoint in CrlEndpoints)
             {
                 var generalName = new GeneralName(GeneralName.UniformResourceIdentifier, new DerIA5String(endpoint));
                 var gns = new GeneralNames(generalName);
@@ -217,7 +222,7 @@ namespace CertificateToolbox
             certificateGenerator.AddExtension(X509Extensions.CrlDistributionPoints, false, seq);
         }
 
-        private X509Certificate2 ConvertCertificate(X509Certificate certificate)
+        private X509Certificate2? ConvertCertificate(X509Certificate certificate)
         {
             var store = new Pkcs12Store();
             string friendlyName = certificate.SubjectDN.ToString();

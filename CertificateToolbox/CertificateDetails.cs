@@ -8,9 +8,9 @@ namespace CertificateToolbox
 {
     public partial class CertificateDetails : UserControl
     {
-        public X509Certificate2 Certificate { get; set; }
-        public CertificateDetails Issuer { get; set; }
-        public X509Certificate2 OcspResponder { get; set; }
+        public X509Certificate2? Certificate { get; set; }
+        public CertificateDetails? Issuer { get; set; }
+        public X509Certificate2? OcspResponder { get; set; }
 
         private readonly BigInteger serialNo;
 
@@ -19,7 +19,7 @@ namespace CertificateToolbox
             InitializeComponent();
         }
 
-        public CertificateDetails(BigInteger serialNumber, CertificateDetails issuer)
+        public CertificateDetails(BigInteger serialNumber, CertificateDetails? issuer)
         {
             InitializeComponent();
 
@@ -27,7 +27,7 @@ namespace CertificateToolbox
 
             serialNo = serialNumber;
             serial.Text = serialNumber.ToString();
-            subject.Text = string.Format("CN={0} {1}", Environment.MachineName, serialNumber);
+            subject.Text = $@"CN={Environment.MachineName} {serialNumber}";
 
             store_name.DataSource = Enum.GetValues(typeof(StoreName));
             store_name.SelectedItem = StoreName.Root;
@@ -68,7 +68,7 @@ namespace CertificateToolbox
             return generator2.GetOcspResponse(status, OcspResponder, include_ocsp_cert.Checked);
         }
         
-        public X509Certificate2 Generate()
+        public X509Certificate2? Generate()
         {
             StopRevocationServers();
 
@@ -100,24 +100,25 @@ namespace CertificateToolbox
             if (string.IsNullOrEmpty(thumbprint.Text)) return;
 
             foreach (StoreLocation storeLocation in new [] {StoreLocation.LocalMachine, StoreLocation.CurrentUser})
-            foreach (StoreName storeName in Enum.GetValues(typeof(StoreName)))
-            {
-                var store = new X509Store(storeName, storeLocation);
-                store.Open(OpenFlags.ReadWrite | OpenFlags.MaxAllowed);
-                var certificates = store.Certificates.Find(X509FindType.FindByThumbprint, thumbprint.Text, false);
-                if (certificates.Count == 1)
+                foreach (StoreName storeName in Enum.GetValues(typeof(StoreName)))
                 {
-                    store.Remove(certificates[0]);
+                    var store = new X509Store(storeName, storeLocation);
+                    store.Open(OpenFlags.ReadWrite | OpenFlags.MaxAllowed);
+                    var certificates = store.Certificates.Find(X509FindType.FindByThumbprint, thumbprint.Text, false);
+                    if (certificates.Count == 1)
+                    {
+                        store.Remove(certificates[0]);
+                    }
+                    store.Close();
                 }
-                store.Close();
-            }
         }
 
         private void InstallNewCertificate()
         {
             var store = new X509Store((StoreName)store_name.SelectedItem, (StoreLocation)store_location.SelectedItem);
             store.Open(OpenFlags.ReadWrite);
-            store.Add(Certificate);
+            if (Certificate != null)
+                store.Add(Certificate);
             store.Close();
         }
 
@@ -140,17 +141,17 @@ namespace CertificateToolbox
             Certificate = generator.Generate();
         }
 
-        private X509Certificate2 GetIssuer()
+        private X509Certificate2? GetIssuer()
         {
-            if (Issuer == null)
+            return Issuer switch
             {
-                return null;
-            }
-            if (Issuer.is_recreate_required.Checked)
-            {
-                return Issuer.Generate();
-            }
-            return Issuer.Certificate;
+                null => null,
+                _ => Issuer.is_recreate_required.Checked switch
+                {
+                    true => Issuer.Generate(),
+                    _ => Issuer.Certificate
+                }
+            };
         }
 
         private void GenerateOcspResponder()
@@ -163,17 +164,19 @@ namespace CertificateToolbox
                 NotAfter = not_after.Value,
                 Issuer = Issuer?.Certificate,
                 Usages = new[] {"ocsp"},
-                SubjectAlternativeNames = new string[0],
-                OcspEndpoints = new string[0],
-                CrlEndpoints = new string[0]
+                SubjectAlternativeNames = Array.Empty<string>(),
+                OcspEndpoints = Array.Empty<string>(),
+                CrlEndpoints = Array.Empty<string>()
             };
 
             OcspResponder = generator.Generate();
         }
 
-        private string[] Serialize(DataGridViewRowCollection rows)
+        private string?[] Serialize(DataGridViewRowCollection rows)
         {
-            return (from DataGridViewRow row in rows where row.Cells[0].Value != null select row.Cells[0].Value.ToString()).ToArray();
+            return (rows.Cast<DataGridViewRow>()
+                .Where(row => row.Cells[0].Value != null)
+                .Select(row => row.Cells[0].Value.ToString())).ToArray();
         }
 
         private void ClearThumbprint()
@@ -184,7 +187,7 @@ namespace CertificateToolbox
 
         private void UpdateThumbprint()
         {
-            thumbprint.Text = Certificate.Thumbprint;
+            thumbprint.Text = Certificate?.Thumbprint;
             Refresh();
         }
 

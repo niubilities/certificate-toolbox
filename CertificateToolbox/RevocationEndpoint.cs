@@ -63,16 +63,16 @@ namespace CertificateToolbox
             }
         }
 
-        private string GetUrl(string port)
+        private string GetUrl(string? port)
         {
-            return string.Format("http://{0}:{1}/", Environment.MachineName, port);
+            return $@"http://{Environment.MachineName}:{port}/";
         }
 
         private bool stopRequested;
 
         public class MyState
         {
-            public HttpListener Listener { get; set; }
+            public HttpListener? Listener { get; set; }
             public Func<RevocationStatus> GetStatus { get; set; }
         }
 
@@ -88,8 +88,8 @@ namespace CertificateToolbox
 
         private void ListenerCallback(IAsyncResult asyncResult)
         {
-            MyState state = (MyState) asyncResult.AsyncState;
-            HttpListener listener = state.Listener;
+            MyState? state = asyncResult.AsyncState as MyState;
+            HttpListener? listener = state?.Listener;
 
             try
             {
