@@ -1,7 +1,7 @@
-﻿using System.Diagnostics;
-
-namespace CertificateToolbox
+﻿namespace CertificateToolbox
 {
+    using System.Diagnostics;
+
     public class CryptNetCache
     {
         public static void Clear()
@@ -12,7 +12,7 @@ namespace CertificateToolbox
 
         private static void Execute(string program, string arguments)
         {
-            Process process = new Process();
+            var process = new Process();
             process.StartInfo.FileName = program;
             process.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
             process.StartInfo.Arguments = arguments;

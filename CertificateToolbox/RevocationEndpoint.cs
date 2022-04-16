@@ -1,30 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Net;
-using System.Windows.Forms;
-
-namespace CertificateToolbox
+﻿namespace CertificateToolbox
 {
+    using System.Net;
+
     public partial class RevocationEndpoint : UserControl
     {
-        private List<HttpListener> listeners;
+        private static int counter = 9090;
+        private readonly List<HttpListener> listeners;
 
-        public string RevocationType
-        {
-            get { return groupBox2.Text; }
-            set { groupBox2.Text = value; }
-        }
-
-        public string[] Urls
-        {
-            get { return (from DataGridViewRow row in dataGridView1.Rows where row.Cells[0].Value != null && !row.IsNewRow select GetUrl(row.Cells[0].Value.ToString())).ToArray(); }
-        }
-
-        public string ContentType { get; set; }
-
-        public Func<RevocationStatus, byte[]> GetResponse { get; set; }
+        private bool stopRequested;
 
         public RevocationEndpoint()
         {
@@ -34,33 +17,60 @@ namespace CertificateToolbox
             RevocationStatusColumn.ValueType = typeof(RevocationStatus);
         }
 
-        private static int counter = 9090;
+        public string ContentType { get; set; }
+
+        public Func<RevocationStatus, byte[]> GetResponse { get; set; }
+
+        public string RevocationType
+        {
+            get => groupBox2.Text;
+            set => groupBox2.Text = value;
+        }
+
+        public string[] Urls =>
+            (from DataGridViewRow row in dataGridView1.Rows
+                where row.Cells[0].Value != null && !row.IsNewRow
+                select GetUrl(row.Cells[0].Value.ToString())).ToArray();
 
         public void Add()
         {
             dataGridView1.Rows.Add(++counter, RevocationStatus.Valid);
         }
-        
+
         public void Start()
         {
             stopRequested = false;
 
             foreach (DataGridViewRow row in dataGridView1.Rows)
             {
-                if (row.Cells[0].Value == null)
-                {
-                    continue;
-                }
+                if (row.Cells[0].Value == null) continue;
+
                 var listener = new HttpListener();
                 listeners.Add(listener);
                 var baseUrl = GetUrl(row.Cells[0].Value.ToString());
                 listener.Prefixes.Add(baseUrl);
                 listener.Start();
-                listener.BeginGetContext(ListenerCallback, new MyState
-                {
-                    Listener = listener, GetStatus = ()=>(RevocationStatus)row.Cells[1].Value
-                });
+
+                listener.BeginGetContext(
+                    ListenerCallback,
+                    new MyState
+                    {
+                        Listener = listener, GetStatus = () => (RevocationStatus)row.Cells[1].Value
+                    });
             }
+        }
+
+        public void Stop()
+        {
+            stopRequested = true;
+            foreach (var listener in listeners) listener.Close();
+            listeners.Clear();
+        }
+
+        private void dataGridView1_DefaultValuesNeeded(object sender, DataGridViewRowEventArgs e)
+        {
+            e.Row.Cells[0].Value = ++counter;
+            e.Row.Cells[1].Value = RevocationStatus.Valid;
         }
 
         private string GetUrl(string? port)
@@ -68,34 +78,16 @@ namespace CertificateToolbox
             return $@"http://{Environment.MachineName}:{port}/";
         }
 
-        private bool stopRequested;
-
-        public class MyState
-        {
-            public HttpListener? Listener { get; set; }
-            public Func<RevocationStatus> GetStatus { get; set; }
-        }
-
-        public void Stop()
-        {
-            stopRequested = true;
-            foreach (var listener in listeners)
-            {
-                listener.Close();
-            }
-            listeners.Clear();
-        }
-
         private void ListenerCallback(IAsyncResult asyncResult)
         {
-            MyState? state = asyncResult.AsyncState as MyState;
-            HttpListener? listener = state?.Listener;
+            var state = asyncResult.AsyncState as MyState;
+            var listener = state?.Listener;
 
             try
             {
                 if (stopRequested) return;
 
-                HttpListenerContext context = listener.EndGetContext(asyncResult);
+                var context = listener.EndGetContext(asyncResult);
 
                 var status = state.GetStatus();
                 var response = GetResponse(status);
@@ -114,17 +106,14 @@ namespace CertificateToolbox
             }
             finally
             {
-                if (!stopRequested)
-                {
-                    listener.BeginGetContext(ListenerCallback, state);
-                }
+                if (!stopRequested) listener.BeginGetContext(ListenerCallback, state);
             }
         }
 
-        private void dataGridView1_DefaultValuesNeeded(object sender, DataGridViewRowEventArgs e)
+        public class MyState
         {
-            e.Row.Cells[0].Value = ++counter;
-            e.Row.Cells[1].Value = RevocationStatus.Valid;
+            public Func<RevocationStatus> GetStatus { get; set; }
+            public HttpListener? Listener { get; set; }
         }
     }
 }

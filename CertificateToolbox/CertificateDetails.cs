@@ -1,17 +1,10 @@
-﻿using System;
-using System.Linq;
-using System.Security.Cryptography.X509Certificates;
-using System.Windows.Forms;
-using Org.BouncyCastle.Math;
-
-namespace CertificateToolbox
+﻿namespace CertificateToolbox
 {
+    using System.Security.Cryptography.X509Certificates;
+    using Org.BouncyCastle.Math;
+
     public partial class CertificateDetails : UserControl
     {
-        public X509Certificate2? Certificate { get; set; }
-        public CertificateDetails? Issuer { get; set; }
-        public X509Certificate2? OcspResponder { get; set; }
-
         private readonly BigInteger serialNo;
 
         public CertificateDetails()
@@ -40,34 +33,20 @@ namespace CertificateToolbox
 
             subject_alternative_names.ReadOnly = is_ca.Checked;
             key_usages.ReadOnly = is_ca.Checked;
-            
+            subject_alternative_names.Visible = !is_ca.Checked;
+            key_usages.Visible = !is_ca.Checked;
             ocsp.Add();
             ocsp.GetResponse = GetOcsp;
 
             crl.Add();
             crl.GetResponse = GetCrl;
         }
-        
-        private byte[] GetCrl(RevocationStatus status)
-        {
-            var generator = new Generator
-            {
-                Issuer = Issuer == null ? Certificate : Issuer.Certificate,
-                SerialNumber = serialNo,
-            };
-            return generator.GetCrl(status);
-        }
 
-        private byte[] GetOcsp(RevocationStatus status)
-        {    
-            var generator2 = new Generator
-            {
-                Issuer = Issuer == null ? Certificate : Issuer.Certificate,
-                SerialNumber = serialNo,
-            };
-            return generator2.GetOcspResponse(status, OcspResponder, include_ocsp_cert.Checked);
-        }
-        
+        public event Action<CertificateDetails> RemoveRequested;
+        public X509Certificate2? Certificate { get; set; }
+        public CertificateDetails? Issuer { get; set; }
+        public X509Certificate2? OcspResponder { get; set; }
+
         public X509Certificate2? Generate()
         {
             StopRevocationServers();
@@ -78,17 +57,11 @@ namespace CertificateToolbox
 
             GenerateCertificate();
 
-            if (install_store.Checked)
-            {
-                InstallNewCertificate();
-            }
+            if (install_store.Checked) InstallNewCertificate();
 
             UpdateThumbprint();
 
-            if (has_ocsp_responder.Checked)
-            {
-                GenerateOcspResponder();
-            }
+            if (has_ocsp_responder.Checked) GenerateOcspResponder();
 
             StartRevocationServers();
 
@@ -99,27 +72,26 @@ namespace CertificateToolbox
         {
             if (string.IsNullOrEmpty(thumbprint.Text)) return;
 
-            foreach (StoreLocation storeLocation in new [] {StoreLocation.LocalMachine, StoreLocation.CurrentUser})
+            foreach (var storeLocation in new[] { StoreLocation.LocalMachine, StoreLocation.CurrentUser })
                 foreach (StoreName storeName in Enum.GetValues(typeof(StoreName)))
                 {
                     var store = new X509Store(storeName, storeLocation);
                     store.Open(OpenFlags.ReadWrite | OpenFlags.MaxAllowed);
                     var certificates = store.Certificates.Find(X509FindType.FindByThumbprint, thumbprint.Text, false);
-                    if (certificates.Count == 1)
-                    {
-                        store.Remove(certificates[0]);
-                    }
+                    if (certificates.Count == 1) store.Remove(certificates[0]);
                     store.Close();
                 }
         }
 
-        private void InstallNewCertificate()
+        private void ClearThumbprint()
         {
-            var store = new X509Store((StoreName)store_name.SelectedItem, (StoreLocation)store_location.SelectedItem);
-            store.Open(OpenFlags.ReadWrite);
-            if (Certificate != null)
-                store.Add(Certificate);
-            store.Close();
+            thumbprint.Clear();
+            Refresh();
+        }
+
+        private void copy_Click(object sender, EventArgs e)
+        {
+            Clipboard.SetText(thumbprint.Text);
         }
 
         private void GenerateCertificate()
@@ -141,6 +113,35 @@ namespace CertificateToolbox
             Certificate = generator.Generate();
         }
 
+        private void GenerateOcspResponder()
+        {
+            var generator = new Generator
+            {
+                SerialNumber = new BigInteger(serial.Text + "00"),
+                SubjectName = subject.Text + "_OCSP_responder",
+                NotBefore = not_before.Value,
+                NotAfter = not_after.Value,
+                Issuer = Issuer?.Certificate,
+                Usages = new[] { "ocsp" },
+                SubjectAlternativeNames = Array.Empty<string>(),
+                OcspEndpoints = Array.Empty<string>(),
+                CrlEndpoints = Array.Empty<string>()
+            };
+
+            OcspResponder = generator.Generate();
+        }
+
+        private byte[] GetCrl(RevocationStatus status)
+        {
+            var generator = new Generator
+            {
+                Issuer = Issuer == null ? Certificate : Issuer.Certificate,
+                SerialNumber = serialNo
+            };
+
+            return generator.GetCrl(status);
+        }
+
         private X509Certificate2? GetIssuer()
         {
             return Issuer switch
@@ -154,68 +155,39 @@ namespace CertificateToolbox
             };
         }
 
-        private void GenerateOcspResponder()
+        private byte[] GetOcsp(RevocationStatus status)
         {
-            var generator = new Generator
+            var generator2 = new Generator
             {
-                SerialNumber = new BigInteger(serial.Text + "00"),
-                SubjectName = subject.Text + "_OCSP_responder",
-                NotBefore = not_before.Value,
-                NotAfter = not_after.Value,
-                Issuer = Issuer?.Certificate,
-                Usages = new[] {"ocsp"},
-                SubjectAlternativeNames = Array.Empty<string>(),
-                OcspEndpoints = Array.Empty<string>(),
-                CrlEndpoints = Array.Empty<string>()
+                Issuer = Issuer == null ? Certificate : Issuer.Certificate,
+                SerialNumber = serialNo
             };
 
-            OcspResponder = generator.Generate();
+            return generator2.GetOcspResponse(status, OcspResponder, include_ocsp_cert.Checked);
         }
 
-        private string?[] Serialize(DataGridViewRowCollection rows)
+        private void InstallNewCertificate()
         {
-            return (rows.Cast<DataGridViewRow>()
-                .Where(row => row.Cells[0].Value != null)
-                .Select(row => row.Cells[0].Value.ToString())).ToArray();
-        }
-
-        private void ClearThumbprint()
-        {
-            thumbprint.Clear();
-            Refresh();
-        }
-
-        private void UpdateThumbprint()
-        {
-            thumbprint.Text = Certificate?.Thumbprint;
-            Refresh();
-        }
-
-        private void StartRevocationServers()
-        {
-            ocsp.Start();
-            crl.Start();
-        }
-        
-        private void StopRevocationServers()
-        {
-            ocsp.Stop();
-            crl.Stop();
+            var store = new X509Store((StoreName)store_name.SelectedItem, (StoreLocation)store_location.SelectedItem);
+            store.Open(OpenFlags.ReadWrite);
+            if (Certificate != null) store.Add(Certificate);
+            store.Close();
         }
 
         private void is_ca_CheckedChanged(object sender, EventArgs e)
         {
             subject_alternative_names.ReadOnly = is_ca.Checked;
             key_usages.ReadOnly = is_ca.Checked;
+            subject_alternative_names.Visible = !is_ca.Checked;
+            key_usages.Visible = !is_ca.Checked;
 
             if (is_ca.Checked)
             {
                 subject_alternative_names.Rows.Clear();
+
                 key_usages.Rows.Clear();
             }
         }
-
-        public event Action<CertificateDetails> RemoveRequested;
 
         private void remove_Click(object sender, EventArgs e)
         {
@@ -223,10 +195,30 @@ namespace CertificateToolbox
             StopRevocationServers();
             RemoveRequested?.Invoke(this);
         }
-        
-        private void copy_Click(object sender, EventArgs e)
+
+        private string?[] Serialize(DataGridViewRowCollection rows)
         {
-            Clipboard.SetText(thumbprint.Text);
+            return rows.Cast<DataGridViewRow>()
+                .Where(row => row.Cells[0].Value != null)
+                .Select(row => row.Cells[0].Value.ToString()).ToArray();
+        }
+
+        private void StartRevocationServers()
+        {
+            ocsp.Start();
+            crl.Start();
+        }
+
+        private void StopRevocationServers()
+        {
+            ocsp.Stop();
+            crl.Stop();
+        }
+
+        private void UpdateThumbprint()
+        {
+            thumbprint.Text = Certificate?.Thumbprint;
+            Refresh();
         }
     }
 }
