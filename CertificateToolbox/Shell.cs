@@ -6,7 +6,7 @@
 
     public partial class Shell : Form
     {
-        private BigInteger serialNumber = BigInteger.Zero;
+        private BigInteger _serialNumber = BigInteger.Zero;
 
         public Shell()
         {
@@ -17,8 +17,8 @@
 
         private void add_Click(object sender, EventArgs e)
         {
-            serialNumber = serialNumber.Add(BigInteger.One);
-            var newCert = new CertificateDetails(serialNumber, LastCert);
+            _serialNumber = _serialNumber.Add(BigInteger.One);
+            var newCert = new CertificateDetails(_serialNumber, LastCert);
             newCert.RemoveRequested += Remove;
             layout.Controls.Add(newCert);
         }
@@ -40,10 +40,17 @@
 
         private void export_Click(object sender, EventArgs e)
         {
-            foreach (CertificateDetails details in layout.Controls)
+            //foreach (CertificateDetails details in layout.Controls)
+            //{
+            //    Export(details.Certificate);
+            //    Export(details.OcspResponder);
+            //}
+
+            var er = layout.Controls.GetEnumerator();
+            while (er != null && er.MoveNext())
             {
-                Export(details.Certificate);
-                Export(details.OcspResponder);
+                Export((er.Current as CertificateDetails)?.Certificate);
+                Export((er.Current as CertificateDetails)?.OcspResponder);
             }
         }
 

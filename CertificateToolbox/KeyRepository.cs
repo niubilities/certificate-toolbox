@@ -8,8 +8,8 @@
 
     public class KeyRepository
     {
-        private static readonly PemReader pem;
-        private static readonly StreamReader reader;
+        private static readonly PemReader Pem;
+        private static readonly StreamReader Reader;
 
         static KeyRepository()
         {
@@ -17,23 +17,23 @@
 
             if (File.Exists(filename))
             {
-                reader = new StreamReader(filename);
-                pem = new PemReader(reader);
+                Reader = new StreamReader(filename);
+                Pem = new PemReader(Reader);
             }
         }
 
         public static AsymmetricCipherKeyPair Next()
         {
-            if (pem != null)
+            if (Pem != null)
             {
-                var keyPair = (AsymmetricCipherKeyPair)pem.ReadObject();
+                var keyPair = (AsymmetricCipherKeyPair)Pem.ReadObject();
 
                 if (keyPair != null) return keyPair;
 
-                reader.DiscardBufferedData();
-                reader.BaseStream.Seek(0, SeekOrigin.Begin);
+                Reader.DiscardBufferedData();
+                Reader.BaseStream.Seek(0, SeekOrigin.Begin);
 
-                return (AsymmetricCipherKeyPair)pem.ReadObject();
+                return (AsymmetricCipherKeyPair)Pem.ReadObject();
             }
 
             var random = new SecureRandom(new CryptoApiRandomGenerator());

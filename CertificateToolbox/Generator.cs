@@ -17,25 +17,25 @@
 
     public class Generator
     {
-        private readonly Dictionary<string?, KeyPurposeID> _extendedUsagesMap = new()
+        private readonly Dictionary<string, KeyPurposeID> _extendedUsagesMap = new()
         {
             { "client", KeyPurposeID.IdKPClientAuth },
             { "server", KeyPurposeID.IdKPServerAuth },
             { "ocsp", KeyPurposeID.IdKPOcspSigning }
         };
-        private readonly X509V3CertificateGenerator certificateGenerator;
+        private readonly X509V3CertificateGenerator _certificateGenerator;
 
-        private readonly SecureRandom random;
-        private AsymmetricCipherKeyPair issuerKeyPair;
+        private readonly SecureRandom _random;
+        private AsymmetricCipherKeyPair _issuerKeyPair;
 
-        private string issuerName;
-        private BigInteger issuerSerialNumber;
-        private AsymmetricCipherKeyPair subjectKeyPair;
+        private string _issuerName;
+        private BigInteger _issuerSerialNumber;
+        private AsymmetricCipherKeyPair _subjectKeyPair;
 
         public Generator()
         {
-            random = new SecureRandom(new CryptoApiRandomGenerator());
-            certificateGenerator = new X509V3CertificateGenerator();
+            _random = new SecureRandom(new CryptoApiRandomGenerator());
+            _certificateGenerator = new X509V3CertificateGenerator();
         }
 
         public string[] CrlEndpoints { get; set; }
@@ -63,7 +63,7 @@
             }
 
             var seq = new DerSequence(distributionPoints.ToArray());
-            certificateGenerator.AddExtension(X509Extensions.CrlDistributionPoints, false, seq);
+            _certificateGenerator.AddExtension(X509Extensions.CrlDistributionPoints, false, seq);
         }
 
         public void AddOcspPoints()
@@ -78,33 +78,33 @@
             }
 
             var seq = new DerSequence(accessDescriptions.ToArray());
-            certificateGenerator.AddExtension(X509Extensions.AuthorityInfoAccess, false, seq);
+            _certificateGenerator.AddExtension(X509Extensions.AuthorityInfoAccess, false, seq);
         }
 
         public X509Certificate2? Generate()
         {
-            subjectKeyPair = KeyRepository.Next();
+            _subjectKeyPair = KeyRepository.Next();
 
             if (Issuer == null)
             {
-                issuerKeyPair = subjectKeyPair;
-                issuerName = SubjectName;
-                issuerSerialNumber = SerialNumber;
+                _issuerKeyPair = _subjectKeyPair;
+                _issuerName = SubjectName;
+                _issuerSerialNumber = SerialNumber;
             }
             else
             {
-                issuerName = Issuer.Subject;
+                _issuerName = Issuer.Subject;
 
-                issuerKeyPair = DotNetUtilities.GetKeyPair(Issuer.GetECDiffieHellmanPrivateKey());
-                issuerSerialNumber = new BigInteger(Issuer.GetSerialNumber());
+                _issuerKeyPair = DotNetUtilities.GetKeyPair(Issuer.GetECDiffieHellmanPrivateKey());
+                _issuerSerialNumber = new BigInteger(Issuer.GetSerialNumber());
             }
 
-            certificateGenerator.SetSerialNumber(SerialNumber);
-            certificateGenerator.SetIssuerDN(new X509Name(issuerName));
-            certificateGenerator.SetSubjectDN(new X509Name(SubjectName));
-            certificateGenerator.SetNotBefore(NotBefore);
-            certificateGenerator.SetNotAfter(NotAfter);
-            certificateGenerator.SetPublicKey(subjectKeyPair.Public);
+            _certificateGenerator.SetSerialNumber(SerialNumber);
+            _certificateGenerator.SetIssuerDN(new X509Name(_issuerName));
+            _certificateGenerator.SetSubjectDN(new X509Name(SubjectName));
+            _certificateGenerator.SetNotBefore(NotBefore);
+            _certificateGenerator.SetNotAfter(NotAfter);
+            _certificateGenerator.SetPublicKey(_subjectKeyPair.Public);
             AddAuthorityKeyIdentifier();
             AddSubjectKeyIdentifier();
             AddBasicConstraints();
@@ -113,8 +113,8 @@
             AddSubjectAlternativeNames();
             AddOcspPoints();
             AddCrlDistributionPoints();
-            ISignatureFactory factory = new Asn1SignatureFactory("SHA256WithRSA", subjectKeyPair.Private);
-            var certificate = certificateGenerator.Generate(factory);
+            ISignatureFactory factory = new Asn1SignatureFactory("SHA256WithRSA", _subjectKeyPair.Private);
+            var certificate = _certificateGenerator.Generate(factory);
 
             return ConvertCertificate(certificate);
         }
@@ -190,11 +190,11 @@
         private void AddAuthorityKeyIdentifier()
         {
             var authorityKeyIdentifierExtension = new AuthorityKeyIdentifier(
-                SubjectPublicKeyInfoFactory.CreateSubjectPublicKeyInfo(issuerKeyPair.Public),
-                new GeneralNames(new GeneralName(new X509Name(issuerName))),
-                issuerSerialNumber);
+                SubjectPublicKeyInfoFactory.CreateSubjectPublicKeyInfo(_issuerKeyPair.Public),
+                new GeneralNames(new GeneralName(new X509Name(_issuerName))),
+                _issuerSerialNumber);
 
-            certificateGenerator.AddExtension(
+            _certificateGenerator.AddExtension(
                 X509Extensions.AuthorityKeyIdentifier.Id,
                 false,
                 authorityKeyIdentifierExtension);
@@ -202,7 +202,7 @@
 
         private void AddBasicConstraints()
         {
-            certificateGenerator.AddExtension(
+            _certificateGenerator.AddExtension(
                 X509Extensions.BasicConstraints.Id,
                 true,
                 new BasicConstraints(IsCertificateAuthority));
@@ -214,19 +214,19 @@
             {
                 var usages = Usages.Select(x => _extendedUsagesMap[x]);
 
-                certificateGenerator.AddExtension(
+                _certificateGenerator.AddExtension(
                     X509Extensions.ExtendedKeyUsage.Id,
                     false,
                     new ExtendedKeyUsage(usages));
             }
 
             if (Usages.Contains("ocsp"))
-                certificateGenerator.AddExtension(OcspObjectIdentifiers.PkixOcspNocheck.Id, false, Array.Empty<byte>());
+                _certificateGenerator.AddExtension(OcspObjectIdentifiers.PkixOcspNocheck.Id, false, Array.Empty<byte>());
         }
 
         private void AddKeyUsage()
         {
-            certificateGenerator.AddExtension(
+            _certificateGenerator.AddExtension(
                 X509Extensions.KeyUsage,
                 false,
                 new KeyUsage(
@@ -242,7 +242,7 @@
                     SubjectAlternativeNames.Select(name => new GeneralName(GeneralName.DnsName, name))
                         .ToArray<Asn1Encodable>());
 
-                certificateGenerator.AddExtension(
+                _certificateGenerator.AddExtension(
                     X509Extensions.SubjectAlternativeName.Id,
                     false,
                     subjectAlternativeNamesExtension);
@@ -252,9 +252,9 @@
         private void AddSubjectKeyIdentifier()
         {
             var subjectKeyIdentifierExtension = new SubjectKeyIdentifier(
-                SubjectPublicKeyInfoFactory.CreateSubjectPublicKeyInfo(subjectKeyPair.Public));
+                SubjectPublicKeyInfoFactory.CreateSubjectPublicKeyInfo(_subjectKeyPair.Public));
 
-            certificateGenerator.AddExtension(
+            _certificateGenerator.AddExtension(
                 X509Extensions.SubjectKeyIdentifier.Id,
                 false,
                 subjectKeyIdentifierExtension);
@@ -266,11 +266,11 @@
             var friendlyName = certificate.SubjectDN.ToString();
             var certificateEntry = new X509CertificateEntry(certificate);
             store.SetCertificateEntry(friendlyName, certificateEntry);
-            store.SetKeyEntry(friendlyName, new AsymmetricKeyEntry(subjectKeyPair.Private), new[] { certificateEntry });
+            store.SetKeyEntry(friendlyName, new AsymmetricKeyEntry(_subjectKeyPair.Private), new[] { certificateEntry });
 
             const string password = "1234";
             var stream = new MemoryStream();
-            store.Save(stream, password.ToCharArray(), random);
+            store.Save(stream, password.ToCharArray(), _random);
 
             return new X509Certificate2(
                 stream.ToArray(),

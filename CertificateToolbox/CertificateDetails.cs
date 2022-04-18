@@ -5,7 +5,7 @@
 
     public partial class CertificateDetails : UserControl
     {
-        private readonly BigInteger serialNo;
+        private readonly BigInteger _serialNo;
 
         public CertificateDetails()
         {
@@ -18,7 +18,7 @@
 
             Issuer = issuer;
 
-            serialNo = serialNumber;
+            _serialNo = serialNumber;
             serial.Text = serialNumber.ToString();
             subject.Text = $@"CN={Environment.MachineName} {serialNumber}";
 
@@ -136,7 +136,7 @@
             var generator = new Generator
             {
                 Issuer = Issuer == null ? Certificate : Issuer.Certificate,
-                SerialNumber = serialNo
+                SerialNumber = _serialNo
             };
 
             return generator.GetCrl(status);
@@ -160,7 +160,7 @@
             var generator2 = new Generator
             {
                 Issuer = Issuer == null ? Certificate : Issuer.Certificate,
-                SerialNumber = serialNo
+                SerialNumber = _serialNo
             };
 
             return generator2.GetOcspResponse(status, OcspResponder, include_ocsp_cert.Checked);

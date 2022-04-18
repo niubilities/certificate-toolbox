@@ -4,15 +4,15 @@
 
     public partial class RevocationEndpoint : UserControl
     {
-        private static int counter = 9090;
-        private readonly List<HttpListener> listeners;
+        private static int _counter = 9090;
+        private readonly List<HttpListener> _listeners;
 
-        private bool stopRequested;
+        private bool _stopRequested;
 
         public RevocationEndpoint()
         {
             InitializeComponent();
-            listeners = new List<HttpListener>();
+            _listeners = new List<HttpListener>();
             RevocationStatusColumn.DataSource = Enum.GetValues(typeof(RevocationStatus));
             RevocationStatusColumn.ValueType = typeof(RevocationStatus);
         }
@@ -34,19 +34,19 @@
 
         public void Add()
         {
-            dataGridView1.Rows.Add(++counter, RevocationStatus.Valid);
+            dataGridView1.Rows.Add(++_counter, RevocationStatus.Valid);
         }
 
         public void Start()
         {
-            stopRequested = false;
+            _stopRequested = false;
 
             foreach (DataGridViewRow row in dataGridView1.Rows)
             {
                 if (row.Cells[0].Value == null) continue;
 
                 var listener = new HttpListener();
-                listeners.Add(listener);
+                _listeners.Add(listener);
                 var baseUrl = GetUrl(row.Cells[0].Value.ToString());
                 listener.Prefixes.Add(baseUrl);
                 listener.Start();
@@ -62,14 +62,14 @@
 
         public void Stop()
         {
-            stopRequested = true;
-            foreach (var listener in listeners) listener.Close();
-            listeners.Clear();
+            _stopRequested = true;
+            foreach (var listener in _listeners) listener.Close();
+            _listeners.Clear();
         }
 
         private void dataGridView1_DefaultValuesNeeded(object sender, DataGridViewRowEventArgs e)
         {
-            e.Row.Cells[0].Value = ++counter;
+            e.Row.Cells[0].Value = ++_counter;
             e.Row.Cells[1].Value = RevocationStatus.Valid;
         }
 
@@ -85,7 +85,7 @@
 
             try
             {
-                if (stopRequested) return;
+                if (_stopRequested) return;
 
                 var context = listener.EndGetContext(asyncResult);
 
@@ -106,7 +106,7 @@
             }
             finally
             {
-                if (!stopRequested) listener.BeginGetContext(ListenerCallback, state);
+                if (!_stopRequested) listener.BeginGetContext(ListenerCallback, state);
             }
         }
 
