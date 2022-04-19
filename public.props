@@ -42,7 +42,7 @@
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/niubilitynetcore/EmitMapper</RepositoryUrl>
 
-    
+
     <PackageReleaseNotes Condition="Exists('$(SolutionDir)/CHANGELOG.md')">$([System.IO.File]::ReadAllText("$(SolutionDir)/CHANGELOG.md"))</PackageReleaseNotes>
 
 

@@ -1,9 +1,8 @@
-﻿namespace CertificateToolbox
+﻿namespace CertificateToolbox;
+
+public enum RevocationStatus
 {
-    public enum RevocationStatus
-    {
-        Valid,
-        Revoked,
-        Unknown
-    }
+    Valid,
+    Revoked,
+    Unknown
 }

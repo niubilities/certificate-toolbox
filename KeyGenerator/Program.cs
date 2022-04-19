@@ -1,36 +1,34 @@
-﻿using System.IO;
-using Org.BouncyCastle.Crypto;
+﻿using Org.BouncyCastle.Crypto;
 using Org.BouncyCastle.Crypto.Generators;
 using Org.BouncyCastle.Crypto.Prng;
 using Org.BouncyCastle.OpenSsl;
 using Org.BouncyCastle.Security;
 
-namespace KeyGenerator
+namespace KeyGenerator;
+
+internal class Program
 {
-  class Program
-  {
-    static void Main(string[] args)
+    private static void Main(string[] args)
     {
-      string filename = args[0];
-      int count = int.Parse(args[1]);
+        var filename = args[0];
+        var count = int.Parse(args[1]);
 
-      const int bitLength = 2048;
+        const int bitLength = 2048;
 
-      var random = new SecureRandom(new CryptoApiRandomGenerator());
-      var keyGenerationParameters = new KeyGenerationParameters(random, bitLength);
-      var keyPairGenerator = new RsaKeyPairGenerator();
-      keyPairGenerator.Init(keyGenerationParameters);
+        var random = new SecureRandom(new CryptoApiRandomGenerator());
+        var keyGenerationParameters = new KeyGenerationParameters(random, bitLength);
+        var keyPairGenerator = new RsaKeyPairGenerator();
+        keyPairGenerator.Init(keyGenerationParameters);
 
-      using var writer = new StreamWriter(filename);
-      var pemWriter = new PemWriter(writer);
+        using var writer = new StreamWriter(filename);
+        var pemWriter = new PemWriter(writer);
 
-      for (int i = 0; i < count; i++)
-      {
-        var keyPair = keyPairGenerator.GenerateKeyPair();
-        pemWriter.WriteObject(keyPair.Private);
-      }
+        for (var i = 0; i < count; i++)
+        {
+            var keyPair = keyPairGenerator.GenerateKeyPair();
+            pemWriter.WriteObject(keyPair.Private);
+        }
 
-      writer.Close();
+        writer.Close();
     }
-  }
 }
