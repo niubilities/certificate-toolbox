@@ -1,46 +1,47 @@
-﻿using Org.BouncyCastle.Crypto;
-using Org.BouncyCastle.Crypto.Generators;
-using Org.BouncyCastle.Crypto.Prng;
-using Org.BouncyCastle.OpenSsl;
-using Org.BouncyCastle.Security;
-
-namespace CertificateToolbox;
-
-public class KeyRepository
+﻿namespace CertificateToolbox
 {
-    private static readonly PemReader Pem;
-    private static readonly StreamReader Reader;
+    using Org.BouncyCastle.Crypto;
+    using Org.BouncyCastle.Crypto.Generators;
+    using Org.BouncyCastle.Crypto.Prng;
+    using Org.BouncyCastle.OpenSsl;
+    using Org.BouncyCastle.Security;
 
-    static KeyRepository()
+    public class KeyRepository
     {
-        const string filename = "private.keys";
+        private static readonly PemReader Pem;
+        private static readonly StreamReader Reader;
 
-        if (File.Exists(filename))
+        static KeyRepository()
         {
-            Reader = new StreamReader(filename);
-            Pem = new PemReader(Reader);
-        }
-    }
+            const string filename = "private.keys";
 
-    public static AsymmetricCipherKeyPair Next()
-    {
-        if (Pem != null)
-        {
-            var keyPair = (AsymmetricCipherKeyPair)Pem.ReadObject();
-
-            if (keyPair != null) return keyPair;
-
-            Reader.DiscardBufferedData();
-            Reader.BaseStream.Seek(0, SeekOrigin.Begin);
-
-            return (AsymmetricCipherKeyPair)Pem.ReadObject();
+            if (File.Exists(filename))
+            {
+                Reader = new StreamReader(filename);
+                Pem = new PemReader(Reader);
+            }
         }
 
-        var random = new SecureRandom(new CryptoApiRandomGenerator());
-        var keyGenerationParameters = new KeyGenerationParameters(random, 2048);
-        var keyPairGenerator = new RsaKeyPairGenerator();
-        keyPairGenerator.Init(keyGenerationParameters);
+        public static AsymmetricCipherKeyPair Next()
+        {
+            if (Pem != null)
+            {
+                var keyPair = (AsymmetricCipherKeyPair)Pem.ReadObject();
 
-        return keyPairGenerator.GenerateKeyPair();
+                if (keyPair != null) return keyPair;
+
+                Reader.DiscardBufferedData();
+                Reader.BaseStream.Seek(0, SeekOrigin.Begin);
+
+                return (AsymmetricCipherKeyPair)Pem.ReadObject();
+            }
+
+            var random = new SecureRandom(new CryptoApiRandomGenerator());
+            var keyGenerationParameters = new KeyGenerationParameters(random, 2048);
+            var keyPairGenerator = new RsaKeyPairGenerator();
+            keyPairGenerator.Init(keyGenerationParameters);
+
+            return keyPairGenerator.GenerateKeyPair();
+        }
     }
 }
