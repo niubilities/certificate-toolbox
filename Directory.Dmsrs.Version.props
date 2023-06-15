@@ -14,18 +14,18 @@
 
 	<Target Name="TestMessage" Label="Directory.Build.props" AfterTargets="Build">
 
-		<Message Text="==Packed '$(MSBuildProjectName)' with :========================================================"
-		         Importance="high" />
+		<!--<Message Text="==Packed '$(MSBuildProjectName)' with :========================================================"
+		         Importance="high" />-->
 
 		<!-- Use $(Property Name) to reference a property -->
 
-		<Message Text="           ReadmeFilePath:  $(ReadmeFilePath)" Importance="high" />
+		<!--<Message Text="           ReadmeFilePath:  $(ReadmeFilePath)" Importance="high" />
 		<Message Text="        ChangeLogFilePath:  $(ChangeLogFilePath)" Importance="high" />
 		<Message Text="      DescriptionFilePath:  $(DescriptionFilePath)" Importance="high" />
 		<Message Text="          PackageIconPath:  $(PackageIconPath)" Importance="high" />
 		<Message Text="          ApplicationIcon:  $(ApplicationIcon)" Importance="high" />
 		<Message Text="AssemblyOriginatorKeyFile:  $(AssemblyOriginatorKeyFile)" Importance="high" />
-		<Message Text="PackageCertificateKeyFile:  $(PackageCertificateKeyFile)" Importance="high" />
+		<Message Text="PackageCertificateKeyFile:  $(PackageCertificateKeyFile)" Importance="high" />-->
 
 		<!--<Message Text="$(ProjDir)" Importance="high" />
     <Message Text="$(PropsSolutionDir)" Importance="high" />
@@ -46,4 +46,25 @@
 		<Message Text="       " Importance="high" />
 		<Message Text="       " Importance="high" />
 	</Target>
+
+	<PropertyGroup>
+		<CertificateFileName>$(MSBuildProjectName).snk</CertificateFileName>
+		<ChangeLogFileName>changelog.md</ChangeLogFileName>
+		<ProjectDescriptionFileName>description.md</ProjectDescriptionFileName>
+
+		<PackageVersion>$(Version)</PackageVersion>
+		<Title>$(AssemblyName)</Title>
+		<Authors>Jimbo</Authors>
+		<Company>DMSRS</Company>
+		<Copyright>Copyright (c) 2006-2022 DMSRS. All rights reserved.</Copyright>
+		<PackageId>DMSRS.$(AssemblyName)</PackageId>
+		<PackageTags>EmitMapper;Mapper;POCO;Object Mapping</PackageTags>
+		<PackageLicenseExpression>MIT</PackageLicenseExpression>
+		<PackageProjectUrl>https://github.com/niubilities/certificate-toolbox</PackageProjectUrl>
+		<RepositoryType>git</RepositoryType>
+		<RepositoryUrl>https://github.com/niubilities/certificate-toolbox</RepositoryUrl>
+		<PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
+
+		<!--<PackageOutputPath>$(PropsDir)nupkgs</PackageOutputPath>-->
+	</PropertyGroup>
 </Project>
